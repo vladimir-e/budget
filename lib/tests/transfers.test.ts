@@ -215,6 +215,34 @@ describe('syncTransferAmount', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('should reject expense with stray transferPairId', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [
+        makeTx({ id: '1', type: 'expense', accountId: 'a1', transferPairId: '2' }),
+        makeTx({ id: '2', type: 'expense', accountId: 'a1' }),
+      ],
+    };
+    const result = syncTransferAmount(store, '1', -200);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain('not a transfer');
+  });
+
+  it('should reject when pair is not a transfer type', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [
+        makeTx({ id: 't1', type: 'transfer', accountId: 'a1', transferPairId: '2' }),
+        makeTx({ id: '2', type: 'expense', accountId: 'a1' }),
+      ],
+    };
+    const result = syncTransferAmount(store, 't1', -200);
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain('corrupted');
+  });
+
   it('should return error for non-existent transaction', () => {
     const result = syncTransferAmount(transferStore, '999', -200);
     expect(result.ok).toBe(false);
@@ -272,6 +300,20 @@ describe('unlinkTransfer', () => {
     };
     const result = unlinkTransfer(store, '1', 'expense');
     expect(result.ok).toBe(false);
+  });
+
+  it('should reject expense with stray transferPairId', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [
+        makeTx({ id: '1', type: 'expense', accountId: 'a1', transferPairId: '2' }),
+        makeTx({ id: '2', type: 'expense', accountId: 'a1' }),
+      ],
+    };
+    const result = unlinkTransfer(store, '1', 'expense');
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain('not a transfer');
   });
 
   it('should return error for non-existent transaction', () => {

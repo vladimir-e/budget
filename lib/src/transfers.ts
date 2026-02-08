@@ -122,13 +122,18 @@ export function syncTransferAmount(store: DataStore, id: string, newAmount: numb
   }
 
   const transaction = store.transactions[index];
-  if (!transaction.transferPairId) {
+  if (!isTransfer(transaction)) {
     return err(`Transaction ${id} is not a transfer`);
   }
 
   const pairIndex = store.transactions.findIndex((t) => t.id === transaction.transferPairId);
   if (pairIndex === -1) {
     return err(`Transfer pair not found: ${transaction.transferPairId}`);
+  }
+
+  const pair = store.transactions[pairIndex];
+  if (!isTransfer(pair)) {
+    return err(`Transfer pair ${pair.id} is not a transfer — data may be corrupted`);
   }
 
   const transactions = [...store.transactions];
@@ -154,7 +159,7 @@ export function unlinkTransfer(store: DataStore, id: string, newType: 'income' |
   }
 
   const transaction = store.transactions[index];
-  if (!transaction.transferPairId) {
+  if (!isTransfer(transaction)) {
     return err(`Transaction ${id} is not a transfer`);
   }
 
