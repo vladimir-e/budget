@@ -133,6 +133,7 @@ export interface CreateCategoryInput {
 }
 
 export interface UpdateCategoryInput {
+  type?: CategoryType;
   name?: string;
   group?: string;
   assigned?: number;

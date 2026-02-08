@@ -44,6 +44,8 @@ export function BudgetScreen() {
         <h2 className="text-sm font-semibold text-gray-900">Budget</h2>
         <div className="flex items-center gap-3">
           <button
+            type="button"
+            aria-label="Previous month"
             onClick={() => selectMonth(offsetMonth(selectedMonth, -1))}
             className="text-sm text-gray-500 hover:text-gray-700"
           >
@@ -53,6 +55,8 @@ export function BudgetScreen() {
             {formatMonth(selectedMonth)}
           </span>
           <button
+            type="button"
+            aria-label="Next month"
             onClick={() => selectMonth(offsetMonth(selectedMonth, 1))}
             className="text-sm text-gray-500 hover:text-gray-700"
           >
