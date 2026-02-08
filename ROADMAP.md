@@ -41,49 +41,49 @@ I/O shell:   load(dataDir) → DataStore    persist(DataStore, dataDir) → void
 ```
 
 ### 1.1 Result type (`lib/src/result.ts`)
-- [ ] `type Result<T> = {ok: true, value: T} | {ok: false, error: string}`
-- [ ] Helper constructors: `ok(value)`, `err(error)`
-- [ ] No exceptions for expected failures — Result everywhere
+- [x] `type Result<T> = {ok: true, value: T} | {ok: false, error: string}`
+- [x] Helper constructors: `ok(value)`, `err(error)`
+- [x] No exceptions for expected failures — Result everywhere
 
 ### 1.2 Field schemas (`lib/src/schema.ts`)
-- [ ] Field metadata: `{name, type: 'string'|'number'|'boolean'}` per field
-- [ ] `ACCOUNT_SCHEMA`, `TRANSACTION_SCHEMA`, `CATEGORY_SCHEMA`
-- [ ] Compile-time check: schema field names must match interface keys (TypeScript `satisfies` + conditional type)
-- [ ] Replace existing `ACCOUNT_FIELDS` / `TRANSACTION_FIELDS` / `CATEGORY_FIELDS` arrays — schemas become the single source of truth
-- [ ] `serialize<T>(record, schema)` → `Record<string, string>` for CSV writing
-- [ ] `deserialize<T>(raw, schema)` → typed record (parse numbers, booleans)
-- [ ] `fieldNames(schema)` → `string[]` for CSV headers
-- [ ] Integer money conversion in serialize/deserialize: CSV `"10.50"` → memory `1050` (×10^precision on read, ÷10^precision on write)
-- [ ] Currency precision map: `{ USD: 2, EUR: 2, JPY: 0, BTC: 8, ... }` — extensible constant
-- [ ] Amount fields use `'money'` type in schema (not plain `'number'`) — requires currency context for conversion
-- [ ] Tests: round-trip serialize/deserialize, edge cases (empty strings, "0", "false"), precision per currency, no floating-point drift
+- [x] Field metadata: `{name, type: 'string'|'number'|'boolean'}` per field
+- [x] `ACCOUNT_SCHEMA`, `TRANSACTION_SCHEMA`, `CATEGORY_SCHEMA`
+- [x] Compile-time check: schema field names must match interface keys (TypeScript `satisfies` + conditional type)
+- [x] Replace existing `ACCOUNT_FIELDS` / `TRANSACTION_FIELDS` / `CATEGORY_FIELDS` arrays — schemas become the single source of truth
+- [x] `serialize<T>(record, schema)` → `Record<string, string>` for CSV writing
+- [x] `deserialize<T>(raw, schema)` → typed record (parse numbers, booleans)
+- [x] `fieldNames(schema)` → `string[]` for CSV headers
+- [x] Integer money conversion in serialize/deserialize: CSV `"10.50"` → memory `1050` (×10^precision on read, ÷10^precision on write)
+- [x] Currency precision map: `{ USD: 2, EUR: 2, JPY: 0, BTC: 8, ... }` — extensible constant
+- [x] Amount fields use `'money'` type in schema (not plain `'number'`) — requires currency context for conversion
+- [x] Tests: round-trip serialize/deserialize, edge cases (empty strings, "0", "false"), precision per currency, no floating-point drift
 
 ### 1.3 Schema migration
-- [ ] On read: CSV with missing columns → fill with defaults per schema
-- [ ] On read: CSV with extra columns → ignore (don't crash)
-- [ ] On write: always write ALL schema columns
-- [ ] First write after adding a column auto-migrates the file
-- [ ] Tests: read old CSV missing a column, read CSV with extra column, migration round-trip
+- [x] On read: CSV with missing columns → fill with defaults per schema
+- [x] On read: CSV with extra columns → ignore (don't crash)
+- [x] On write: always write ALL schema columns
+- [x] First write after adding a column auto-migrates the file
+- [x] Tests: read old CSV missing a column, read CSV with extra column, migration round-trip
 
 ### 1.4 Atomic file I/O (`lib/src/storage.ts`)
-- [ ] `atomicWriteFile(path, content)` — write to temp file, fsync, rename over original
-- [ ] `readCSVFile<T>(path, schema)` → `T[]` — read + deserialize with schema
-- [ ] `writeCSVFile<T>(path, schema, records)` — serialize + atomic write
-- [ ] `appendCSVRecords<T>(path, schema, records)` — append without rewriting (transactions optimization)
-- [ ] Multi-file write: write all temp files first, rename in sequence
-- [ ] Tests: atomic write (original untouched on failure), append correctness, round-trips
+- [x] `atomicWriteFile(path, content)` — write to temp file, fsync, rename over original
+- [x] `readCSVFile<T>(path, schema)` → `T[]` — read + deserialize with schema
+- [x] `writeCSVFile<T>(path, schema, records)` — serialize + atomic write
+- [x] `appendCSVRecords<T>(path, schema, records)` — append without rewriting (transactions optimization)
+- [x] Multi-file write: write all temp files first, rename in sequence
+- [x] Tests: atomic write (original untouched on failure), append correctness, round-trips
 
 ### 1.5 DataStore (`lib/src/store.ts`)
-- [ ] `type DataStore = { accounts: Account[], transactions: Transaction[], categories: Category[] }`
-- [ ] `loadStore(dataDir)` → `Promise<DataStore>` — reads all 3 CSVs
-- [ ] `persistStore(store, dataDir)` → `Promise<void>` — atomic write all changed files
-- [ ] Defensive reads: dangling references never crash (treat as uncategorized / non-transfer)
-- [ ] Tests: load from disk, persist and reload, empty data dir
+- [x] `type DataStore = { accounts: Account[], transactions: Transaction[], categories: Category[] }`
+- [x] `loadStore(dataDir)` → `Promise<DataStore>` — reads all 3 CSVs
+- [x] `persistStore(store, dataDir)` → `Promise<void>` — atomic write all changed files
+- [x] Defensive reads: dangling references never crash (treat as uncategorized / non-transfer)
+- [x] Tests: load from disk, persist and reload, empty data dir
 
 ### 1.6 ID generation (`lib/src/ids.ts`)
-- [ ] `nextId(records)` → string — auto-increment from max existing ID
-- [ ] Handles empty dataset (starts at "1"), gaps in IDs, non-numeric IDs
-- [ ] Tests: empty, sequential, gaps
+- [x] `nextId(records)` → string — auto-increment from max existing ID
+- [x] Handles empty dataset (starts at "1"), gaps in IDs, non-numeric IDs
+- [x] Tests: empty, sequential, gaps
 
 ---
 
@@ -100,54 +100,54 @@ and we have no RDBMS safety net.
 - Uncategorized transactions don't count toward any category's "spent"
 
 ### 2.1 Account CRUD (`lib/src/accounts.ts`)
-- [ ] `createAccount(store, data)` → `Result<DataStore>` — validate, assign ID, set createdAt
-- [ ] `updateAccount(store, id, changes)` → `Result<DataStore>` — validate, immutable ID
-- [ ] `hideAccount(store, id)` → `Result<DataStore>` — soft delete (set hidden=true)
-- [ ] `deleteAccount(store, id)` → `Result<DataStore>` — **BLOCK if any transactions reference this account**
-- [ ] Tests: create, update, hide, delete empty account, block delete with transactions
+- [x] `createAccount(store, data)` → `Result<DataStore>` — validate, assign ID, set createdAt
+- [x] `updateAccount(store, id, changes)` → `Result<DataStore>` — validate, immutable ID
+- [x] `hideAccount(store, id)` → `Result<DataStore>` — soft delete (set hidden=true)
+- [x] `deleteAccount(store, id)` → `Result<DataStore>` — **BLOCK if any transactions reference this account**
+- [x] Tests: create, update, hide, delete empty account, block delete with transactions
 
 ### 2.2 Transaction CRUD (`lib/src/transactions.ts`)
-- [ ] `createTransaction(store, data)` → `Result<DataStore>` — validate, verify accountId exists, verify categoryId exists or empty
-- [ ] `updateTransaction(store, id, changes)` → `Result<DataStore>` — validate, verify new accountId/categoryId if changed
-- [ ] `deleteTransaction(store, id)` → `Result<DataStore>` — **cascade delete transfer pair** if transferPairId exists
-- [ ] Bulk import: accept array, deduplicate by `date|accountId|amount|description`, skip before reconciled date
-- [ ] Append optimization: new transactions use appendCSVRecords, edits/deletes do full rewrite
-- [ ] Tests: create, update, delete, bulk import, dedup, cascade delete pair, dangling categoryId
+- [x] `createTransaction(store, data)` → `Result<DataStore>` — validate, verify accountId exists, verify categoryId exists or empty
+- [x] `updateTransaction(store, id, changes)` → `Result<DataStore>` — validate, verify new accountId/categoryId if changed
+- [x] `deleteTransaction(store, id)` → `Result<DataStore>` — **cascade delete transfer pair** if transferPairId exists
+- [x] Bulk import: accept array, deduplicate by `date|accountId|amount|description`, skip before reconciled date
+- [x] Append optimization: new transactions use appendCSVRecords, edits/deletes do full rewrite
+- [x] Tests: create, update, delete, bulk import, dedup, cascade delete pair, dangling categoryId
 
 ### 2.3 Category CRUD (`lib/src/categories.ts`)
-- [ ] `createCategory(store, data)` → `Result<DataStore>` — validate, assign ID
-- [ ] `updateCategory(store, id, changes)` → `Result<DataStore>` — validate, update assigned amount
-- [ ] `hideCategory(store, id)` → `Result<DataStore>` — soft delete
-- [ ] `deleteCategory(store, id)` → `Result<DataStore>` — **nullify categoryId on ALL referencing transactions** (mass CSV rewrite of transactions.csv)
-- [ ] Tests: create, update, hide, delete with nullification, verify transaction mass update
+- [x] `createCategory(store, data)` → `Result<DataStore>` — validate, assign ID
+- [x] `updateCategory(store, id, changes)` → `Result<DataStore>` — validate, update assigned amount
+- [x] `hideCategory(store, id)` → `Result<DataStore>` — soft delete
+- [x] `deleteCategory(store, id)` → `Result<DataStore>` — **nullify categoryId on ALL referencing transactions** (mass CSV rewrite of transactions.csv)
+- [x] Tests: create, update, hide, delete with nullification, verify transaction mass update
 
 ### 2.4 Transfer integrity (`lib/src/transfers.ts`)
-- [ ] `createTransfer(store, fromAccountId, toAccountId, amount, ...)` → `Result<DataStore>` — create two transactions with mutual transferPairId
-- [ ] Edit amount → sync paired transaction (flip sign)
-- [ ] Edit accountId → only edited side moves, pair stays (valid: "wrong source account" fix)
-- [ ] Change type from transfer → other → **unlink and delete paired transaction**
-- [ ] Delete one side → **cascade delete the other**
-- [ ] Tests: create pair, sync amount, change account, unlink on type change, cascade delete
+- [x] `createTransfer(store, fromAccountId, toAccountId, amount, ...)` → `Result<DataStore>` — create two transactions with mutual transferPairId
+- [x] Edit amount → sync paired transaction (flip sign)
+- [x] Edit accountId → only edited side moves, pair stays (valid: "wrong source account" fix)
+- [x] Change type from transfer → other → **unlink and delete paired transaction**
+- [x] Delete one side → **cascade delete the other**
+- [x] Tests: create pair, sync amount, change account, unlink on type change, cascade delete
 
 ### 2.5 Reconciliation (`lib/src/reconcile.ts`)
-- [ ] `reconcileAccount(store, accountId, reportedBalance)` → `Result<DataStore>` — check discrepancy, set reconciled date + update balance
-- [ ] `createBalanceAdjustment(store, accountId)` → `Result<DataStore>` — auto-create transaction to zero out discrepancy
-- [ ] **Auto-clear**: any transaction create/update/delete affecting an account clears its reconciled field
-- [ ] Wire auto-clearing into all transaction mutations
-- [ ] Three account states: **reconciled** (formally verified) / **balanced** (amounts match, not verified) / **discrepancy** (amounts differ)
-- [ ] Tests: reconcile flow, balance adjustment, auto-clear on mutation, threshold checks, three-state detection
+- [x] `reconcileAccount(store, accountId, reportedBalance)` → `Result<DataStore>` — check discrepancy, set reconciled date + update balance
+- [x] `createBalanceAdjustment(store, accountId)` → `Result<DataStore>` — auto-create transaction to zero out discrepancy
+- [x] **Auto-clear**: any transaction create/update/delete affecting an account clears its reconciled field
+- [x] Wire auto-clearing into all transaction mutations
+- [x] Three account states: **reconciled** (formally verified) / **balanced** (amounts match, not verified) / **discrepancy** (amounts differ)
+- [x] Tests: reconcile flow, balance adjustment, auto-clear on mutation, threshold checks, three-state detection
 
 ### 2.6 Unified API (`lib/src/index.ts`)
-- [ ] Coordinate multi-file operations (e.g., deleteCategory touches categories.csv AND transactions.csv)
-- [ ] Consistent Result-based error handling across all operations
-- [ ] Integration tests: create account → add transactions → categorize → reconcile → delete category → verify nullification
+- [x] Coordinate multi-file operations (e.g., deleteCategory touches categories.csv AND transactions.csv)
+- [x] Consistent Result-based error handling across all operations
+- [x] Integration tests: create account → add transactions → categorize → reconcile → delete category → verify nullification
 
 ### Data integrity test suite
-- [ ] Referential integrity: every cascade/block/nullify scenario
-- [ ] Corruption resistance: dangling accountId, dangling categoryId, dangling transferPairId — never crash
-- [ ] Round-trips: write N records → read → assert identical, including special characters
-- [ ] Bulk operations: import 1000 transactions, delete category with 500 transactions
-- [ ] Concurrent-ish safety: verify atomic write leaves original untouched on abort
+- [x] Referential integrity: every cascade/block/nullify scenario
+- [x] Corruption resistance: dangling accountId, dangling categoryId, dangling transferPairId — never crash
+- [x] Round-trips: write N records → read → assert identical, including special characters
+- [x] Bulk operations: import 1000 transactions, delete category with 500 transactions
+- [x] Concurrent-ish safety: verify atomic write leaves original untouched on abort
 
 ---
 
@@ -157,28 +157,28 @@ and we have no RDBMS safety net.
 All routes currently return empty responses.
 
 ### 3.1 Wire routes to lib
-- [ ] `GET /api/accounts` — all accounts with working balances
-- [ ] `POST /api/accounts` — create account
-- [ ] `GET/PUT/DELETE /api/accounts/:id` — account CRUD
-- [ ] `POST /api/accounts/:id/reconcile` — reconcile
-- [ ] `GET /api/transactions` — list with filters: `accountId`, `categoryId`, `startDate`, `endDate`
-- [ ] `POST /api/transactions` — create transaction or transfer
-- [ ] `GET/PUT/DELETE /api/transactions/:id` — transaction CRUD (cascade transfers)
-- [ ] `POST /api/transactions/import` — bulk import with dedup
-- [ ] `GET /api/categories` — all categories
-- [ ] `POST /api/categories` — create category
-- [ ] `GET/PUT/DELETE /api/categories/:id` — category CRUD
-- [ ] `GET /api/budget` — categories with assigned / spent / available
-- [ ] `GET /api/budget?month=YYYY-MM` — budget for specific month
+- [x] `GET /api/accounts` — all accounts with working balances
+- [x] `POST /api/accounts` — create account
+- [x] `GET/PUT/DELETE /api/accounts/:id` — account CRUD
+- [x] `POST /api/accounts/:id/reconcile` — reconcile
+- [x] `GET /api/transactions` — list with filters: `accountId`, `categoryId`, `startDate`, `endDate`
+- [x] `POST /api/transactions` — create transaction or transfer
+- [x] `GET/PUT/DELETE /api/transactions/:id` — transaction CRUD (cascade transfers)
+- [x] `POST /api/transactions/import` — bulk import with dedup
+- [x] `GET /api/categories` — all categories
+- [x] `POST /api/categories` — create category
+- [x] `GET/PUT/DELETE /api/categories/:id` — category CRUD
+- [x] `GET /api/budget` — categories with assigned / spent / available
+- [x] `GET /api/budget?month=YYYY-MM` — budget for specific month
 
 ### 3.2 Error handling
-- [ ] Validate request bodies using lib validators
-- [ ] HTTP status codes: 400 validation, 404 not found, 409 conflict (e.g., delete account with transactions)
-- [ ] Consistent JSON error format
+- [x] Validate request bodies using lib validators
+- [x] HTTP status codes: 400 validation, 404 not found, 409 conflict (e.g., delete account with transactions)
+- [x] Consistent JSON error format
 
 ### 3.3 Server tests
-- [ ] Integration tests for each route (supertest or similar)
-- [ ] Error cases and edge cases
+- [x] Integration tests for each route (supertest or similar)
+- [x] Error cases and edge cases
 
 ---
 
