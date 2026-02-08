@@ -1,0 +1,22 @@
+id,type,name,group,assigned,hidden
+1,income,Paycheck,Income,0,false
+2,income,Interest,Income,0,false
+3,income,Other Income,Income,0,false
+4,expense,Rent/Mortgage,Immediate Obligations,0,false
+5,expense,Utilities,Immediate Obligations,0,false
+6,expense,Groceries,Immediate Obligations,0,false
+7,expense,Insurance,Immediate Obligations,0,false
+8,expense,Transportation,Immediate Obligations,0,false
+9,expense,Internet/Phone,Immediate Obligations,0,false
+10,expense,Dining Out,Lifestyle,0,false
+11,expense,Entertainment,Lifestyle,0,false
+12,expense,Shopping,Lifestyle,0,false
+13,expense,Personal Care,Lifestyle,0,false
+14,expense,Health/Medical,True Expenses,0,false
+15,expense,Car Maintenance,True Expenses,0,false
+16,expense,Home Maintenance,True Expenses,0,false
+17,expense,Clothing,True Expenses,0,false
+18,expense,Gifts,True Expenses,0,false
+19,expense,Education,Quality of Life Goals,0,false
+20,expense,Vacation,Quality of Life Goals,0,false
+21,expense,Savings,Quality of Life Goals,0,false

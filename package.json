@@ -1,0 +1,17 @@
+{
+  "name": "pfs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "lib",
+    "server",
+    "ui"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "test": "npm test --workspace=lib",
+    "dev:server": "npm run dev --workspace=server",
+    "dev:ui": "npm run dev --workspace=ui"
+  }
+}
