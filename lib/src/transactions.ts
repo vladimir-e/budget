@@ -195,11 +195,14 @@ export function deleteTransaction(store: DataStore, id: string): Result<DataStor
     return err(`Transaction not found: ${id}`);
   }
 
-  let idsToDelete = new Set([id]);
+  const idsToDelete = new Set([id]);
 
-  // Cascade: delete transfer pair
-  if (transaction.transferPairId) {
-    idsToDelete.add(transaction.transferPairId);
+  // Cascade: delete transfer pair only if this is actually a transfer
+  if (transaction.type === 'transfer' && transaction.transferPairId) {
+    const pair = store.transactions.find((t) => t.id === transaction.transferPairId);
+    if (pair && pair.type === 'transfer') {
+      idsToDelete.add(transaction.transferPairId);
+    }
   }
 
   const transactions = store.transactions.filter((t) => !idsToDelete.has(t.id));

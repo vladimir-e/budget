@@ -278,6 +278,42 @@ describe('corruption resistance', () => {
     expect(result.value.transactions).toHaveLength(0);
   });
 
+  it('should not cascade delete when non-transfer has stray transferPairId', () => {
+    // Corrupted state: an expense with a transferPairId pointing at another transaction
+    const store: DataStore = {
+      accounts: [makeAccount({ id: 'a1' })],
+      transactions: [
+        makeTx({ id: '1', type: 'expense', accountId: 'a1', transferPairId: '2', amount: -50 }),
+        makeTx({ id: '2', type: 'expense', accountId: 'a1', amount: -75 }),
+      ],
+      categories: [],
+    };
+    // Deleting '1' should NOT cascade to '2' because '1' is not type 'transfer'
+    const result = deleteTransaction(store, '1');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.transactions).toHaveLength(1);
+    expect(result.value.transactions[0].id).toBe('2');
+  });
+
+  it('should not cascade when pair exists but is not a transfer type', () => {
+    // Corrupted state: transfer points at a non-transfer transaction
+    const store: DataStore = {
+      accounts: [makeAccount({ id: 'a1' })],
+      transactions: [
+        makeTx({ id: 't1', type: 'transfer', accountId: 'a1', transferPairId: '2', amount: -100 }),
+        makeTx({ id: '2', type: 'expense', accountId: 'a1', amount: -75 }),
+      ],
+      categories: [],
+    };
+    // Deleting 't1' should NOT cascade to '2' because '2' is not type 'transfer'
+    const result = deleteTransaction(store, 't1');
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.transactions).toHaveLength(1);
+    expect(result.value.transactions[0].id).toBe('2');
+  });
+
   it('should handle bulk import with dangling category references', () => {
     const store: DataStore = {
       accounts: [makeAccount({ id: 'a1' })],
