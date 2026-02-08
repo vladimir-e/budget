@@ -1,5 +1,8 @@
 # Changelog
 
+## Phase 2 — CRUD & Data Integrity
+Added pure-function CRUD operations for accounts, transactions, categories, and transfers, plus account reconciliation. All mutations return Result<DataStore> and enforce referential integrity:
+
 ## Phase 1 — Foundations: Type System, Storage, Schemas
 
 - **Result type** — `Result<T>` with `ok()`/`err()` constructors for error handling without exceptions
