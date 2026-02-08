@@ -203,24 +203,24 @@ All routes currently return empty responses.
 **Why**: The main workhorse screen — where you see your money.
 
 ### 5.1 Account sidebar
-- [ ] Accounts grouped by type with balances
-- [ ] Three-state indicators per account: reconciled (checkmark) / balanced (faded checkmark) / discrepancy (amber dot)
-- [ ] Click to filter, net worth summary
+- [x] Accounts grouped by type with balances
+- [x] Three-state indicators per account: reconciled (checkmark) / balanced (faded checkmark) / discrepancy (amber dot)
+- [x] Click to filter, net worth summary
 - [ ] Settings cog for account management
 
 ### 5.2 Transaction table
-- [ ] Sortable table with inline editing
-- [ ] Color coding (income/expense/transfer)
+- [x] Sortable table with inline editing
+- [x] Color coding (income/expense/transfer)
 - [ ] Pagination or virtual scrolling
 
 ### 5.3 Filters & search
-- [ ] Search box, category filter, date range picker
+- [x] Search box, category filter, date range picker
 
 ### 5.4 Add transaction
-- [ ] Form with validation, transfer mode for linked pairs
+- [x] Form with validation, transfer mode for linked pairs
 
 ### 5.5 Reconciliation UI
-- [ ] Balance bar (reported vs working), reconcile button
+- [x] Balance bar (reported vs working), reconcile button
 
 ---
 
