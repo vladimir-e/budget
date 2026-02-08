@@ -211,7 +211,7 @@ All routes currently return empty responses.
 ### 5.2 Transaction table
 - [x] Sortable table with inline editing
 - [x] Color coding (income/expense/transfer)
-- [ ] Pagination or virtual scrolling
+- [x] Pagination or virtual scrolling
 
 ### 5.3 Filters & search
 - [x] Search box, category filter, date range picker

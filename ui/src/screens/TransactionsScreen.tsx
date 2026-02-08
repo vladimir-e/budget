@@ -88,6 +88,7 @@ export function TransactionsScreen() {
   const [endDate, setEndDate] = useState('');
   const [sortField, setSortField] = useState<SortField>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
+  const [page, setPage] = useState(1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [accountDetail, setAccountDetail] = useState<AccountDetail | null>(null);
 
@@ -95,6 +96,9 @@ export function TransactionsScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editField, setEditField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [searchQuery, categoryFilter, startDate, endDate, sortField, sortDir, selectedAccountId]);
 
   // Account management state
   const [showAccountForm, setShowAccountForm] = useState(false);
@@ -292,6 +296,14 @@ export function TransactionsScreen() {
 
   const netWorth = useMemo(() => accounts.reduce((s, a) => s + a.workingBalance, 0), [accounts]);
 
+  // --- Pagination ---
+  const PAGE_SIZE = 500;
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / PAGE_SIZE));
+  const pagedTransactions = useMemo(
+    () => filteredTransactions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
+    [filteredTransactions, page],
+  );
+
   // --- Category options for filter dropdown ---
   const categoryOptions = useMemo(() => {
     const visible = categories.filter((c) => !c.hidden);
@@ -348,7 +360,7 @@ export function TransactionsScreen() {
             <p className="text-sm text-slate-500 p-4">No transactions.</p>
           )}
 
-          {filteredTransactions.length > 0 && (
+          {pagedTransactions.length > 0 && (
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-700">
@@ -363,7 +375,7 @@ export function TransactionsScreen() {
                 </tr>
               </thead>
               <tbody>
-                {filteredTransactions.map((t) => (
+                {pagedTransactions.map((t) => (
                   <TransactionRow
                     key={t.id}
                     txn={t}
@@ -383,6 +395,48 @@ export function TransactionsScreen() {
                 ))}
               </tbody>
             </table>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-3 py-2 border-t border-slate-800 text-xs text-slate-500">
+              <span>
+                {((page - 1) * PAGE_SIZE) + 1}&ndash;{Math.min(page * PAGE_SIZE, filteredTransactions.length)} of {filteredTransactions.length.toLocaleString()}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(1)}
+                  disabled={page === 1}
+                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                >
+                  &laquo;
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                >
+                  &lsaquo;
+                </button>
+                <span className="px-2 text-slate-400">
+                  {page} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                >
+                  &rsaquo;
+                </button>
+                <button
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages}
+                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                >
+                  &raquo;
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>
