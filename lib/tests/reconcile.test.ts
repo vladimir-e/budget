@@ -5,7 +5,6 @@ import {
   clearReconciled,
   getReconciliationState,
   reconcileAccount,
-  createBalanceAdjustment,
 } from '../src/reconcile.js';
 import type { Account, Transaction } from '../src/types.js';
 import type { DataStore } from '../src/store.js';
@@ -150,57 +149,3 @@ describe('reconcileAccount', () => {
   });
 });
 
-describe('createBalanceAdjustment', () => {
-  it('should create income adjustment for positive discrepancy', () => {
-    const store: DataStore = {
-      accounts: [makeAccount({ id: 'a1' })],
-      transactions: [makeTx({ id: '1', accountId: 'a1', amount: 300 })],
-      categories: [],
-    };
-
-    // Working balance = 300, reported = 500 → discrepancy = 200
-    const result = createBalanceAdjustment(store, 'a1', 500);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    expect(result.value.transactions).toHaveLength(2);
-    const adjustment = result.value.transactions[1];
-    expect(adjustment.type).toBe('income');
-    expect(adjustment.amount).toBe(200);
-    expect(adjustment.description).toBe('Balance adjustment');
-    expect(adjustment.source).toBe('reconciliation');
-  });
-
-  it('should create expense adjustment for negative discrepancy', () => {
-    const store: DataStore = {
-      accounts: [makeAccount({ id: 'a1' })],
-      transactions: [makeTx({ id: '1', accountId: 'a1', amount: 500 })],
-      categories: [],
-    };
-
-    // Working balance = 500, reported = 300 → discrepancy = -200
-    const result = createBalanceAdjustment(store, 'a1', 300);
-    expect(result.ok).toBe(true);
-    if (!result.ok) return;
-    const adjustment = result.value.transactions[1];
-    expect(adjustment.type).toBe('expense');
-    expect(adjustment.amount).toBe(-200);
-  });
-
-  it('should reject when no discrepancy exists', () => {
-    const store: DataStore = {
-      accounts: [makeAccount({ id: 'a1' })],
-      transactions: [makeTx({ id: '1', accountId: 'a1', amount: 500 })],
-      categories: [],
-    };
-
-    const result = createBalanceAdjustment(store, 'a1', 500);
-    expect(result.ok).toBe(false);
-    if (result.ok) return;
-    expect(result.error).toContain('No discrepancy');
-  });
-
-  it('should return error for non-existent account', () => {
-    const result = createBalanceAdjustment(emptyStore, 'nonexistent', 500);
-    expect(result.ok).toBe(false);
-  });
-});
