@@ -95,6 +95,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Track whether initial load is complete
   const initialLoadDone = useRef(false);
 
+  // Monotonic request IDs to discard stale responses
+  const txnRequestId = useRef(0);
+  const budgetRequestId = useRef(0);
+
   // ---- Stable fetch helpers (use refs, never change identity) -------------
 
   const refreshAccounts = useCallback(async () => {
@@ -103,10 +107,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshTransactions = useCallback(async () => {
+    const id = ++txnRequestId.current;
     const filters: TransactionFilters = {};
     if (selectedAccountIdRef.current) filters.accountId = selectedAccountIdRef.current;
     const data = await listTransactions(filters);
-    setTransactions(data);
+    if (id === txnRequestId.current) {
+      setTransactions(data);
+    }
   }, []);
 
   const refreshCategories = useCallback(async () => {
@@ -115,8 +122,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshBudget = useCallback(async () => {
+    const id = ++budgetRequestId.current;
     const data = await getBudget(selectedMonthRef.current);
-    setBudget(data);
+    if (id === budgetRequestId.current) {
+      setBudget(data);
+    }
   }, []);
 
   // ---- Full refresh -------------------------------------------------------
@@ -155,6 +165,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // When selectedAccountId changes, refetch transactions
   useEffect(() => {
     if (!initialLoadDone.current) return;
+    setError(null);
     refreshTransactions().catch((err) =>
       setError(err instanceof Error ? err.message : 'Failed to load transactions'),
     );
@@ -167,6 +178,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // When selectedMonth changes, refetch budget
   useEffect(() => {
     if (!initialLoadDone.current) return;
+    setError(null);
     refreshBudget().catch((err) =>
       setError(err instanceof Error ? err.message : 'Failed to load budget'),
     );
