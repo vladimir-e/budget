@@ -7,10 +7,10 @@
 import { describe, it, expect } from 'vitest';
 import { createAccount } from '../src/accounts.js';
 import { createTransaction, deleteTransaction, bulkImportTransactions } from '../src/transactions.js';
-import { createCategory, deleteCategory, updateCategory } from '../src/categories.js';
+import { createCategory, deleteCategory } from '../src/categories.js';
 import { createTransfer, unlinkTransfer } from '../src/transfers.js';
 import { reconcileAccount } from '../src/reconcile.js';
-import { deleteAccount, hideAccount, updateAccount } from '../src/accounts.js';
+import { deleteAccount } from '../src/accounts.js';
 import type { Account, Transaction, Category } from '../src/types.js';
 import type { DataStore } from '../src/store.js';
 

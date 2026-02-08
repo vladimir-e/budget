@@ -21,6 +21,7 @@ describe('validators', () => {
     });
 
     it('should fail with invalid type', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const result = validateAccount({ name: 'Test', type: 'invalid' as any, currency: 'USD' });
       expect(result.valid).toBe(false);
       expect(result.errors[0].field).toBe('type');

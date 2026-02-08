@@ -6,7 +6,6 @@ import {
   ACCOUNT_FIELDS,
   TRANSACTION_FIELDS,
   CATEGORY_FIELDS,
-  CURRENCY_PRECISION,
   getPrecision,
   fieldNames,
   serialize,

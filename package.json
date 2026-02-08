@@ -11,7 +11,13 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "test": "npm test --workspace=lib",
+    "lint": "eslint .",
     "dev:server": "npm run dev --workspace=server",
     "dev:ui": "npm run dev --workspace=ui"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "typescript-eslint": "^8.54.0"
   }
 }

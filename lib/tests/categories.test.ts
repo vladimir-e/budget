@@ -10,7 +10,7 @@ import {
   hideCategory,
   deleteCategory,
 } from '../src/categories.js';
-import type { Account, Category, Transaction } from '../src/types.js';
+import type { Category, Transaction } from '../src/types.js';
 import type { DataStore } from '../src/store.js';
 
 // ---------------------------------------------------------------------------
@@ -140,6 +140,7 @@ describe('createCategory', () => {
   it('should reject invalid type', () => {
     const result = createCategory(emptyStore, {
       name: 'Test',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: 'invalid' as any,
       group: 'Test',
     });
