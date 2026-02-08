@@ -1,4 +1,7 @@
 import express from 'express';
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { accountsRouter } from './routes/accounts.js';
 import { transactionsRouter } from './routes/transactions.js';
 import { categoriesRouter } from './routes/categories.js';
@@ -20,6 +23,17 @@ app.use('/api/budget', budgetRouter);
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Serve built UI in production (when ui/dist exists)
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uiDistPath = path.resolve(__dirname, '../../ui/dist');
+
+if (existsSync(uiDistPath)) {
+  app.use(express.static(uiDistPath));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(uiDistPath, 'index.html'));
+  });
+}
 
 // Initialize store and start server
 async function start() {

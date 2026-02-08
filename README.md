@@ -11,9 +11,13 @@ TypeScript, Node.js, Express, React, Vite, Tailwind CSS, Vitest
 ```bash
 git clone <repo-url> && cd pfs
 npm install
-npm test          # run lib tests
-npm run dev:server  # start API server (port 3001)
-npm run dev:ui      # start web UI (port 5173)
+npm run dev       # start server + UI in parallel (dev mode)
+```
+
+Or for production use:
+
+```bash
+npm start         # build everything & serve at localhost:3001
 ```
 
 ## Project Structure

@@ -12,11 +12,14 @@
     "build": "npm run build --workspaces",
     "test": "npm test --workspace=lib && npm test --workspace=server",
     "lint": "eslint .",
+    "dev": "concurrently -n server,ui -c blue,magenta \"npm run dev:server\" \"npm run dev:ui\"",
     "dev:server": "npm run dev --workspace=server",
-    "dev:ui": "npm run dev --workspace=ui"
+    "dev:ui": "npm run dev --workspace=ui",
+    "start": "npm run build && node server/dist/index.js"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.2",
     "typescript-eslint": "^8.54.0"
   }
