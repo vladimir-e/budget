@@ -7,7 +7,7 @@
 
 import { readFile, writeFile, open, rename, appendFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { parseCSV, writeCSV } from './csv.js';
+import { parseCSV, writeCSV, escapeField } from './csv.js';
 import type { Schema } from './schema.js';
 import { deserialize, serialize, fieldNames, getPrecision } from './schema.js';
 
@@ -148,17 +148,9 @@ export async function appendCSVRecords<T>(
   });
 
   const lines = serialized.map((rec) =>
-    headers.map((h) => escapeFieldForAppend(rec[h] ?? '')).join(','),
+    headers.map((h) => escapeField(rec[h] ?? '')).join(','),
   );
   const content = lines.join('\n') + '\n';
 
   await appendFile(filePath, content, 'utf-8');
-}
-
-/** Minimal CSV field escaping for append (mirrors csv.ts logic) */
-function escapeFieldForAppend(value: string): string {
-  if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
-    return '"' + value.replace(/"/g, '""') + '"';
-  }
-  return value;
 }
