@@ -16,12 +16,15 @@ export class ApiRequestError extends Error {
  * All API calls go through this function.
  */
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+  };
+  if (options?.body) {
+    headers['Content-Type'] = 'application/json';
+  }
   const res = await fetch(path, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
+    headers: { ...headers, ...options?.headers as Record<string, string> },
   });
 
   // 204 No Content — return void-compatible empty object
