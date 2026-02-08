@@ -83,7 +83,7 @@ export interface ApiError {
 export interface CreateAccountInput {
   name: string;
   type: AccountType;
-  currency?: string;
+  currency: string;
   institution?: string;
 }
 
@@ -128,7 +128,7 @@ export interface UpdateTransactionInput {
 export interface CreateCategoryInput {
   type: CategoryType;
   name: string;
-  group?: string;
+  group: string;
   assigned?: number;
 }
 
