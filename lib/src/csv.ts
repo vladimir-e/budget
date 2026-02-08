@@ -117,7 +117,7 @@ function parseQuotedField(text: string, start: number): { value: string; nextInd
 }
 
 /** Escape a field value for CSV output */
-function escapeField(value: string): string {
+export function escapeField(value: string): string {
   if (value.includes(',') || value.includes('"') || value.includes('\n') || value.includes('\r')) {
     return '"' + value.replace(/"/g, '""') + '"';
   }
