@@ -15,6 +15,7 @@ import {
   fromIntegerAmount,
   schemaDefaults,
 } from '../src/schema.js';
+import { parseCSV, writeCSV } from '../src/csv.js';
 import type { Account, Transaction, Category } from '../src/types.js';
 
 describe('schema', () => {
@@ -129,6 +130,51 @@ describe('schema', () => {
       expect(a + b).toBe(30); // exact integer math
       expect(fromIntegerAmount(a + b, 2)).toBe('0.30');
     });
+
+    it('should handle notorious IEEE 754 values', () => {
+      // 19.99 * 100 = 1998.9999999999998 in float — Math.round fixes it
+      expect(toIntegerAmount('19.99', 2)).toBe(1999);
+      expect(toIntegerAmount('0.01', 2)).toBe(1);
+      expect(toIntegerAmount('33.33', 2)).toBe(3333);
+      expect(toIntegerAmount('0.07', 2)).toBe(7);
+      // 1.005 * 100 = 100.49999... in IEEE 754, so Math.round gives 100
+      expect(toIntegerAmount('1.005', 2)).toBe(100);
+    });
+
+    it('should round excess decimal places', () => {
+      // "10.999" at precision 2 → 10.999 * 100 = 1099.9 → rounds to 1100
+      expect(toIntegerAmount('10.999', 2)).toBe(1100);
+      expect(toIntegerAmount('10.994', 2)).toBe(1099);
+      expect(toIntegerAmount('10.995', 2)).toBe(1100);
+    });
+
+    it('should handle large amounts without losing precision', () => {
+      // Millionaire balance: $1,234,567.89
+      expect(toIntegerAmount('1234567.89', 2)).toBe(123456789);
+      // Billionaire balance: $1,000,000,000.00
+      expect(toIntegerAmount('1000000000.00', 2)).toBe(100000000000);
+      // Verify integer stays within safe range
+      expect(Number.isSafeInteger(toIntegerAmount('1000000000.00', 2))).toBe(true);
+    });
+
+    it('should handle large BTC amounts', () => {
+      // 21 million BTC (max supply) at precision 8
+      const satoshis = toIntegerAmount('21000000.00000000', 8);
+      expect(satoshis).toBe(2100000000000000);
+      expect(Number.isSafeInteger(satoshis)).toBe(true);
+    });
+
+    it('should handle trailing/missing decimals', () => {
+      expect(toIntegerAmount('10.5', 2)).toBe(1050);
+      expect(toIntegerAmount('10.', 2)).toBe(1000);
+      expect(toIntegerAmount('.50', 2)).toBe(50);
+    });
+
+    it('should handle scientific notation input', () => {
+      // Number("1e3") = 1000, Number("1e-2") = 0.01
+      expect(toIntegerAmount('1e3', 2)).toBe(100000);
+      expect(toIntegerAmount('1e-2', 2)).toBe(1);
+    });
   });
 
   describe('fromIntegerAmount', () => {
@@ -150,6 +196,17 @@ describe('schema', () => {
 
     it('should handle negative amounts', () => {
       expect(fromIntegerAmount(-2599, 2)).toBe('-25.99');
+    });
+
+    it('should handle large amounts', () => {
+      expect(fromIntegerAmount(123456789, 2)).toBe('1234567.89');
+      expect(fromIntegerAmount(100000000000, 2)).toBe('1000000000.00');
+    });
+
+    it('should preserve trailing zeros', () => {
+      expect(fromIntegerAmount(1000, 2)).toBe('10.00');
+      expect(fromIntegerAmount(100, 2)).toBe('1.00');
+      expect(fromIntegerAmount(10, 2)).toBe('0.10');
     });
   });
 
@@ -426,6 +483,61 @@ describe('schema', () => {
       const raw = serialize(original, ACCOUNT_SCHEMA, 0);
       const restored = deserialize<Account>(raw, ACCOUNT_SCHEMA, 0);
       expect(restored).toEqual(original);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Full CSV pipeline round-trip
+  // -------------------------------------------------------------------------
+
+  describe('full CSV pipeline round-trip', () => {
+    it('should survive CSV string → parseCSV → deserialize → serialize → writeCSV → parseCSV → deserialize', () => {
+      // Start with raw CSV as it would appear on disk
+      const csvInput = [
+        'id,type,accountId,date,categoryId,description,payee,transferPairId,amount,notes,source,createdAt',
+        '1,expense,1,2025-01-15,6,Groceries,Whole Foods,,-52.30,,manual,2025-01-15',
+        '2,income,1,2025-01-15,,Paycheck,"Acme, Inc.",,1999.99,Monthly salary,direct,2025-01-15',
+        '3,expense,1,2025-01-15,10,"Dinner with ""Bob""",Restaurant,,-19.99,,manual,2025-01-15',
+        '',
+      ].join('\n');
+
+      // Step 1: Parse CSV
+      const rawRecords = parseCSV(csvInput);
+      expect(rawRecords).toHaveLength(3);
+
+      // Step 2: Deserialize with schema
+      const transactions = rawRecords.map((raw: Record<string, string>) =>
+        deserialize<Transaction>(raw, TRANSACTION_SCHEMA, 2),
+      );
+
+      expect(transactions[0].amount).toBe(-5230);
+      expect(transactions[1].amount).toBe(199999);
+      expect(transactions[1].payee).toBe('Acme, Inc.'); // comma survived
+      expect(transactions[2].description).toBe('Dinner with "Bob"'); // quotes survived
+
+      // Step 3: Do some integer math (budget calculation)
+      const total = transactions.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
+      expect(total).toBe(-5230 + 199999 + (-1999)); // exact integer math
+
+      // Step 4: Serialize back
+      const headers = fieldNames(TRANSACTION_SCHEMA);
+      const serialized = transactions.map((t: Transaction) =>
+        serialize(t, TRANSACTION_SCHEMA, 2),
+      );
+
+      // Step 5: Write CSV
+      const csvOutput = writeCSV(headers, serialized);
+
+      // Step 6: Parse again
+      const rawRecords2 = parseCSV(csvOutput);
+
+      // Step 7: Deserialize again
+      const transactions2 = rawRecords2.map((raw: Record<string, string>) =>
+        deserialize<Transaction>(raw, TRANSACTION_SCHEMA, 2),
+      );
+
+      // Verify full round-trip
+      expect(transactions2).toEqual(transactions);
     });
   });
 

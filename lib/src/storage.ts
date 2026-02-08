@@ -5,11 +5,11 @@
  * mid-write never corrupts the original file.
  */
 
-import { readFile, writeFile, open, rename, appendFile, stat } from 'node:fs/promises';
+import { readFile, open, rename, appendFile, stat } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { parseCSV, writeCSV, escapeField } from './csv.js';
 import type { Schema } from './schema.js';
-import { deserialize, serialize, fieldNames, getPrecision } from './schema.js';
+import { deserialize, serialize, fieldNames } from './schema.js';
 
 // ---------------------------------------------------------------------------
 // Atomic write
