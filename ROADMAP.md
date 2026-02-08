@@ -18,6 +18,12 @@ The scaffolding PR established the monorepo structure and partial implementation
 - [x] React app shell with tab navigation and placeholder screens
 - [x] README.md with quick start instructions
 
+### Schema changes needed (informed by POC)
+
+- Add `crypto` to AccountType enum (handled like any currency, crypto-specific features later)
+- Integer money: CSV stores human-readable decimals (`10.50`), but in-memory all amounts are integers (`1050`). Conversion happens in serialize/deserialize only. All math is integer — no floating-point drift.
+- Currency precision map: `{ USD: 2, EUR: 2, JPY: 0, BTC: 8, ... }` — determines ×10^n on read, ÷10^n on write. Precision comes from account's currency.
+
 ---
 
 ## Phase 1 — Foundations: Type System, Storage, Schemas
@@ -47,7 +53,10 @@ I/O shell:   load(dataDir) → DataStore    persist(DataStore, dataDir) → void
 - [ ] `serialize<T>(record, schema)` → `Record<string, string>` for CSV writing
 - [ ] `deserialize<T>(raw, schema)` → typed record (parse numbers, booleans)
 - [ ] `fieldNames(schema)` → `string[]` for CSV headers
-- [ ] Tests: round-trip serialize/deserialize, edge cases (empty strings, "0", "false")
+- [ ] Integer money conversion in serialize/deserialize: CSV `"10.50"` → memory `1050` (×10^precision on read, ÷10^precision on write)
+- [ ] Currency precision map: `{ USD: 2, EUR: 2, JPY: 0, BTC: 8, ... }` — extensible constant
+- [ ] Amount fields use `'money'` type in schema (not plain `'number'`) — requires currency context for conversion
+- [ ] Tests: round-trip serialize/deserialize, edge cases (empty strings, "0", "false"), precision per currency, no floating-point drift
 
 ### 1.3 Schema migration
 - [ ] On read: CSV with missing columns → fill with defaults per schema
@@ -122,9 +131,11 @@ and we have no RDBMS safety net.
 
 ### 2.5 Reconciliation (`lib/src/reconcile.ts`)
 - [ ] `reconcileAccount(store, accountId, reportedBalance)` → `Result<DataStore>` — check discrepancy, set reconciled date + update balance
+- [ ] `createBalanceAdjustment(store, accountId)` → `Result<DataStore>` — auto-create transaction to zero out discrepancy
 - [ ] **Auto-clear**: any transaction create/update/delete affecting an account clears its reconciled field
 - [ ] Wire auto-clearing into all transaction mutations
-- [ ] Tests: reconcile flow, auto-clear on mutation, threshold checks
+- [ ] Three account states: **reconciled** (formally verified) / **balanced** (amounts match, not verified) / **discrepancy** (amounts differ)
+- [ ] Tests: reconcile flow, balance adjustment, auto-clear on mutation, threshold checks, three-state detection
 
 ### 2.6 Unified API (`lib/src/index.ts`)
 - [ ] Coordinate multi-file operations (e.g., deleteCategory touches categories.csv AND transactions.csv)
@@ -193,6 +204,7 @@ All routes currently return empty responses.
 
 ### 5.1 Account sidebar
 - [ ] Accounts grouped by type with balances
+- [ ] Three-state indicators per account: reconciled (checkmark) / balanced (faded checkmark) / discrepancy (amber dot)
 - [ ] Click to filter, net worth summary
 - [ ] Settings cog for account management
 
@@ -241,6 +253,10 @@ All routes currently return empty responses.
 ### 7.2 Parser infrastructure (`data/parsers/`)
 - [ ] Parser template and conventions
 - [ ] IMPORT.md guide for creating parsers (designed for AI assistance)
+
+### 7.3 Import archiving
+- [ ] After successful import, archive processed bank CSV to `data/imports/{account-slug}/YYYY-MM-DD_to_YYYY-MM-DD.csv`
+- [ ] Audit trail: original bank files preserved for re-import or debugging
 
 ---
 
