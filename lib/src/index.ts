@@ -20,3 +20,6 @@ export * from './transactions.js';
 export * from './categories.js';
 export * from './transfers.js';
 export * from './reconcile.js';
+
+// Re-export DataStore type (type-only, no Node.js runtime dependency)
+export type { DataStore } from './store.js';
