@@ -1,5 +1,5 @@
 /** Account types supported by the system */
-export type AccountType = 'cash' | 'checking' | 'credit_card' | 'loan' | 'savings' | 'asset';
+export type AccountType = 'cash' | 'checking' | 'credit_card' | 'loan' | 'savings' | 'asset' | 'crypto';
 
 /** Transaction types */
 export type TransactionType = 'income' | 'expense' | 'transfer';
@@ -46,23 +46,9 @@ export interface Category {
   hidden: boolean;
 }
 
-/** CSV field headers for each record type */
-export const ACCOUNT_FIELDS: readonly (keyof Account)[] = [
-  'id', 'name', 'type', 'currency', 'institution', 'balance', 'hidden', 'reconciled', 'createdAt',
-] as const;
-
-export const TRANSACTION_FIELDS: readonly (keyof Transaction)[] = [
-  'id', 'type', 'accountId', 'date', 'categoryId', 'description', 'payee',
-  'transferPairId', 'amount', 'notes', 'source', 'createdAt',
-] as const;
-
-export const CATEGORY_FIELDS: readonly (keyof Category)[] = [
-  'id', 'type', 'name', 'group', 'assigned', 'hidden',
-] as const;
-
 /** Valid account types */
 export const ACCOUNT_TYPES: readonly AccountType[] = [
-  'cash', 'checking', 'credit_card', 'loan', 'savings', 'asset',
+  'cash', 'checking', 'credit_card', 'loan', 'savings', 'asset', 'crypto',
 ] as const;
 
 /** Valid transaction types */

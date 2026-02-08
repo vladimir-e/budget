@@ -13,6 +13,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@types/node": "^25.2.2",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0"
   }
