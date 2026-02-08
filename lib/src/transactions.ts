@@ -121,6 +121,20 @@ export function updateTransaction(store: DataStore, id: string, changes: UpdateT
   }
 
   const existing = store.transactions[index];
+
+  // Block transfer-unsafe fields — use syncTransferAmount / unlinkTransfer instead
+  if (existing.transferPairId) {
+    if (changes.type !== undefined) {
+      return err('Cannot change type on a transfer transaction — use unlinkTransfer to convert');
+    }
+    if (changes.amount !== undefined) {
+      return err('Cannot change amount on a transfer transaction — use syncTransferAmount to keep pair in sync');
+    }
+    if (changes.accountId !== undefined) {
+      return err('Cannot change accountId on a transfer transaction — use unlinkTransfer first');
+    }
+  }
+
   const merged: Partial<Transaction> = {
     ...existing,
     ...(changes.type !== undefined ? { type: changes.type } : {}),

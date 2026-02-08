@@ -233,6 +233,51 @@ describe('updateTransaction', () => {
     expect(result.value.accounts[0].reconciled).toBe('');
   });
 
+  it('should block type change on transfer-paired transaction', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [makeTx({ id: 't1', type: 'transfer', accountId: 'a1', transferPairId: 't2', amount: -100 })],
+    };
+    const result = updateTransaction(store, 't1', { type: 'expense' });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain('unlinkTransfer');
+  });
+
+  it('should block amount change on transfer-paired transaction', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [makeTx({ id: 't1', type: 'transfer', accountId: 'a1', transferPairId: 't2', amount: -100 })],
+    };
+    const result = updateTransaction(store, 't1', { amount: -200 });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain('syncTransferAmount');
+  });
+
+  it('should block accountId change on transfer-paired transaction', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [makeTx({ id: 't1', type: 'transfer', accountId: 'a1', transferPairId: 't2', amount: -100 })],
+    };
+    const result = updateTransaction(store, 't1', { accountId: 'a2' });
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain('unlinkTransfer');
+  });
+
+  it('should allow safe field updates on transfer-paired transaction', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [makeTx({ id: 't1', type: 'transfer', accountId: 'a1', transferPairId: 't2', amount: -100 })],
+    };
+    const result = updateTransaction(store, 't1', { description: 'Rent transfer', notes: 'Monthly' });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.transactions[0].description).toBe('Rent transfer');
+    expect(result.value.transactions[0].notes).toBe('Monthly');
+  });
+
   it('should auto-clear reconciled on both old and new account when moving', () => {
     const store: DataStore = {
       ...baseStore,
