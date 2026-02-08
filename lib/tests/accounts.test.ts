@@ -9,7 +9,7 @@ import {
   hideAccount,
   deleteAccount,
 } from '../src/accounts.js';
-import type { Account, Transaction, Category } from '../src/types.js';
+import type { Account, Transaction } from '../src/types.js';
 import type { DataStore } from '../src/store.js';
 
 // ---------------------------------------------------------------------------
@@ -135,6 +135,7 @@ describe('createAccount', () => {
   it('should reject invalid type', () => {
     const result = createAccount(emptyStore, {
       name: 'Test',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       type: 'invalid' as any,
       currency: 'USD',
     });
