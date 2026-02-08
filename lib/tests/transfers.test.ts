@@ -321,6 +321,19 @@ describe('unlinkTransfer', () => {
     expect(result.ok).toBe(false);
   });
 
+  it('should reject self-referencing transferPairId as corrupted data', () => {
+    const store: DataStore = {
+      ...baseStore,
+      transactions: [
+        makeTx({ id: 't1', type: 'transfer', accountId: 'a1', transferPairId: 't1', amount: -100 }),
+      ],
+    };
+    const result = unlinkTransfer(store, 't1', 'expense');
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain('self-referencing');
+  });
+
   it('should auto-clear reconciled on affected accounts', () => {
     const store: DataStore = {
       ...baseStore,

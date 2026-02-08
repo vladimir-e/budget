@@ -164,11 +164,18 @@ export function unlinkTransfer(store: DataStore, id: string, newType: 'income' |
   }
 
   const pairId = transaction.transferPairId;
+  if (pairId === id) {
+    return err(`Transaction ${id} has a self-referencing transferPairId — data is corrupted`);
+  }
+
   const pair = store.transactions.find((t) => t.id === pairId);
 
   // Remove the paired transaction and unlink this one
-  let transactions = store.transactions.filter((t) => t.id !== pairId);
+  const transactions = store.transactions.filter((t) => t.id !== pairId);
   const txIndex = transactions.findIndex((t) => t.id === id);
+  if (txIndex === -1) {
+    return err(`Transaction ${id} not found after filtering — data may be corrupted`);
+  }
   transactions[txIndex] = {
     ...transactions[txIndex],
     type: newType,
