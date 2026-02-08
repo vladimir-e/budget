@@ -187,14 +187,14 @@ All routes currently return empty responses.
 **Why**: The UI can't fetch or send data yet.
 
 ### 4.1 API client (`ui/src/api/`)
-- [ ] Fetch wrapper with error handling
-- [ ] Modules: accounts, transactions, categories, budget
+- [x] Fetch wrapper with error handling
+- [x] Modules: accounts, transactions, categories, budget
 
 ### 4.2 State management
-- [ ] React Context or lightweight store
-- [ ] Loading / error states
-- [ ] Refetch after mutations
-- [ ] Selected account + selected month state
+- [x] React Context or lightweight store
+- [x] Loading / error states
+- [x] Refetch after mutations
+- [x] Selected account + selected month state
 
 ---
 
