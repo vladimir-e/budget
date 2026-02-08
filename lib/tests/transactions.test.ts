@@ -370,6 +370,22 @@ describe('bulkImportTransactions', () => {
     expect(result.value.transactions).toHaveLength(2); // existing + 1 new
   });
 
+  it('should deduplicate even when description has surrounding whitespace', () => {
+    const storeWithExisting: DataStore = {
+      ...baseStore,
+      transactions: [makeTx({ id: '1', accountId: 'a1', date: '2025-01-15', amount: -50, description: 'Test' })],
+    };
+    const result = bulkImportTransactions(storeWithExisting, {
+      accountId: 'a1',
+      transactions: [
+        { type: 'expense', date: '2025-01-15', amount: -50, description: '  Test  ' }, // whitespace dup
+      ],
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.transactions).toHaveLength(1); // deduped — no new ones
+  });
+
   it('should skip transactions before reconciled date', () => {
     const store: DataStore = {
       ...baseStore,

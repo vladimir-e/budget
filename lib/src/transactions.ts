@@ -269,7 +269,7 @@ export function bulkImportTransactions(store: DataStore, data: BulkImportInput):
     }
 
     // Dedup check
-    const key = deduplicationKey({ date: input.date, accountId: data.accountId, amount: input.amount, description: input.description ?? '' });
+    const key = deduplicationKey({ date: input.date, accountId: data.accountId, amount: input.amount, description: (input.description ?? '').trim() });
     if (existingKeys.has(key)) {
       continue;
     }
