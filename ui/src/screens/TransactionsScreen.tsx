@@ -1,13 +1,21 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext.tsx';
 import type { Account, Transaction, Category, AccountDetail } from '../api/types.ts';
-import { getAccount, reconcileAccount as apiReconcile } from '../api/accounts.ts';
+import {
+  getAccount,
+  reconcileAccount as apiReconcile,
+  createAccount as apiCreateAcct,
+  updateAccount as apiUpdateAcct,
+  hideAccount as apiHideAcct,
+  deleteAccount as apiDeleteAcct,
+} from '../api/accounts.ts';
+import type { AccountType, CreateAccountInput } from '../api/types.ts';
 import {
   createTransaction as apiCreateTxn,
   updateTransaction as apiUpdateTxn,
   deleteTransaction as apiDeleteTxn,
+  createTransfer as apiCreateTransfer,
 } from '../api/transactions.ts';
-import { createTransfer as apiCreateTransfer } from '../api/transactions.ts';
 
 // ---------------------------------------------------------------------------
 // Constants & helpers
@@ -87,6 +95,10 @@ export function TransactionsScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editField, setEditField] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
+
+  // Account management state
+  const [showAccountForm, setShowAccountForm] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null);
 
   // Fetch account detail when selected account changes
   useEffect(() => {
@@ -238,6 +250,34 @@ export function TransactionsScreen() {
     } catch { /* ignore */ }
   }, [selectedAccountId, refreshAccounts]);
 
+  // --- Account management handlers ---
+  const handleSaveAccount = useCallback(async (data: CreateAccountInput, id?: string) => {
+    try {
+      if (id) {
+        await apiUpdateAcct(id, data);
+      } else {
+        await apiCreateAcct(data);
+      }
+      await refreshAccounts();
+    } catch { /* ignore */ }
+  }, [refreshAccounts]);
+
+  const handleHideAccount = useCallback(async (id: string) => {
+    try {
+      await apiHideAcct(id);
+      if (selectedAccountId === id) selectAccount(null);
+      await refreshAccounts();
+    } catch { /* ignore */ }
+  }, [refreshAccounts, selectedAccountId, selectAccount]);
+
+  const handleDeleteAccount = useCallback(async (id: string) => {
+    try {
+      await apiDeleteAcct(id);
+      if (selectedAccountId === id) selectAccount(null);
+      await refreshAccounts();
+    } catch { /* ignore - API returns 409 if has transactions */ }
+  }, [refreshAccounts, selectedAccountId, selectAccount]);
+
   // --- Account sidebar grouping ---
   const groupedAccounts = useMemo(() => {
     const groups: { type: Account['type']; label: string; accounts: Account[]; total: number }[] = [];
@@ -269,6 +309,10 @@ export function TransactionsScreen() {
         selectAccount={selectAccount}
         loading={loading}
         error={error}
+        onAddAccount={() => { setEditingAccount(null); setShowAccountForm(true); }}
+        onEditAccount={(a) => { setEditingAccount(a); setShowAccountForm(true); }}
+        onHideAccount={handleHideAccount}
+        onDeleteAccount={handleDeleteAccount}
       />
 
       {/* === Main Content === */}
@@ -356,6 +400,19 @@ export function TransactionsScreen() {
           }}
         />
       )}
+
+      {/* Account form modal (add/edit) */}
+      {showAccountForm && (
+        <AccountFormModal
+          account={editingAccount}
+          onClose={() => { setShowAccountForm(false); setEditingAccount(null); }}
+          onSave={async (data) => {
+            await handleSaveAccount(data, editingAccount?.id);
+            setShowAccountForm(false);
+            setEditingAccount(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -371,6 +428,10 @@ function AccountSidebar({
   selectAccount,
   loading,
   error,
+  onAddAccount,
+  onEditAccount,
+  onHideAccount,
+  onDeleteAccount,
 }: {
   groupedAccounts: { type: Account['type']; label: string; accounts: Account[]; total: number }[];
   netWorth: number;
@@ -378,8 +439,14 @@ function AccountSidebar({
   selectAccount: (id: string | null) => void;
   loading: boolean;
   error: string | null;
+  onAddAccount: () => void;
+  onEditAccount: (a: Account) => void;
+  onHideAccount: (id: string) => void;
+  onDeleteAccount: (id: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [menuAccountId, setMenuAccountId] = useState<string | null>(null);
+
   const toggle = (type: string) => {
     setCollapsed((prev) => {
       const next = new Set(prev);
@@ -387,6 +454,14 @@ function AccountSidebar({
       return next;
     });
   };
+
+  // Close menu when clicking elsewhere
+  useEffect(() => {
+    if (!menuAccountId) return;
+    const handler = () => setMenuAccountId(null);
+    document.addEventListener('click', handler);
+    return () => document.removeEventListener('click', handler);
+  }, [menuAccountId]);
 
   return (
     <aside className="w-56 shrink-0">
@@ -430,32 +505,74 @@ function AccountSidebar({
             {!collapsed.has(group.type) && group.accounts.map((a) => {
               const state = accountReconState(a);
               return (
-                <button
-                  key={a.id}
-                  onClick={() => selectAccount(a.id)}
-                  className={`w-full text-left text-sm pl-4 pr-3 py-1 flex items-center gap-1.5 ${
-                    selectedAccountId === a.id
-                      ? 'bg-blue-900/30 text-blue-300'
-                      : 'text-slate-300 hover:bg-slate-800/50'
-                  }`}
-                >
-                  {/* Reconciliation indicator */}
-                  <span className="w-3 text-center shrink-0">
-                    {state === 'reconciled' && <span className="text-green-400 text-xs">&#10003;</span>}
-                    {state === 'balanced' && <span className="text-slate-600 text-xs">&#10003;</span>}
-                    {state === 'discrepancy' && <span className="text-amber-400 text-[8px]">&#9679;</span>}
-                  </span>
-                  <span className="truncate flex-1">{a.name}</span>
-                  <span className={`tabular-nums text-xs ml-1 shrink-0 ${
-                    a.workingBalance >= 0 ? 'text-slate-400' : 'text-red-400'
-                  }`}>
-                    {formatAmount(a.workingBalance)}
-                  </span>
-                </button>
+                <div key={a.id} className="relative group/acct">
+                  <button
+                    onClick={() => selectAccount(a.id)}
+                    className={`w-full text-left text-sm pl-4 pr-3 py-1 flex items-center gap-1.5 ${
+                      selectedAccountId === a.id
+                        ? 'bg-blue-900/30 text-blue-300'
+                        : 'text-slate-300 hover:bg-slate-800/50'
+                    }`}
+                  >
+                    {/* Reconciliation indicator */}
+                    <span className="w-3 text-center shrink-0">
+                      {state === 'reconciled' && <span className="text-green-400 text-xs">&#10003;</span>}
+                      {state === 'balanced' && <span className="text-slate-600 text-xs">&#10003;</span>}
+                      {state === 'discrepancy' && <span className="text-amber-400 text-[8px]">&#9679;</span>}
+                    </span>
+                    <span className="truncate flex-1">{a.name}</span>
+                    <span className={`tabular-nums text-xs ml-1 shrink-0 ${
+                      a.workingBalance >= 0 ? 'text-slate-400' : 'text-red-400'
+                    }`}>
+                      {formatAmount(a.workingBalance)}
+                    </span>
+                  </button>
+
+                  {/* Context menu trigger */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setMenuAccountId(menuAccountId === a.id ? null : a.id); }}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300 opacity-0 group-hover/acct:opacity-100 transition-opacity text-xs px-1"
+                    title="Account settings"
+                  >
+                    &#9881;
+                  </button>
+
+                  {/* Context menu dropdown */}
+                  {menuAccountId === a.id && (
+                    <div className="absolute right-0 top-full z-30 bg-slate-800 border border-slate-700 rounded shadow-lg py-1 min-w-[120px]">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setMenuAccountId(null); onEditAccount(a); }}
+                        className="w-full text-left text-xs px-3 py-1.5 text-slate-300 hover:bg-slate-700"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setMenuAccountId(null); onHideAccount(a.id); }}
+                        className="w-full text-left text-xs px-3 py-1.5 text-slate-300 hover:bg-slate-700"
+                      >
+                        Hide
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setMenuAccountId(null); onDeleteAccount(a.id); }}
+                        className="w-full text-left text-xs px-3 py-1.5 text-red-400 hover:bg-slate-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
         ))}
+
+        {/* Add Account button */}
+        <button
+          onClick={onAddAccount}
+          className="w-full text-left text-xs px-3 py-1.5 mt-1 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+        >
+          + Add Account
+        </button>
       </div>
     </aside>
   );
@@ -1066,6 +1183,134 @@ function AddTransactionModal({
               className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Account Form Modal (Add / Edit)
+// ---------------------------------------------------------------------------
+
+const ACCOUNT_TYPES: { value: AccountType; label: string }[] = [
+  { value: 'checking', label: 'Checking' },
+  { value: 'savings', label: 'Savings' },
+  { value: 'credit_card', label: 'Credit Card' },
+  { value: 'cash', label: 'Cash' },
+  { value: 'asset', label: 'Investment / Asset' },
+  { value: 'crypto', label: 'Crypto' },
+  { value: 'loan', label: 'Loan' },
+];
+
+function AccountFormModal({
+  account,
+  onClose,
+  onSave,
+}: {
+  account: Account | null;
+  onClose: () => void;
+  onSave: (data: CreateAccountInput) => Promise<void>;
+}) {
+  const isEdit = !!account;
+  const [name, setName] = useState(account?.name ?? '');
+  const [type, setType] = useState<AccountType>(account?.type ?? 'checking');
+  const [currency, setCurrency] = useState(account?.currency ?? 'USD');
+  const [institution, setInstitution] = useState(account?.institution ?? '');
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError('');
+    if (!name.trim()) { setFormError('Name is required.'); return; }
+    if (!currency.trim()) { setFormError('Currency is required.'); return; }
+    setSaving(true);
+    try {
+      await onSave({ name: name.trim(), type, currency: currency.trim(), institution: institution.trim() || undefined });
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : 'Failed to save.');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/60" onClick={onClose}>
+      <div
+        className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-sm p-5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-semibold text-slate-100">{isEdit ? 'Edit Account' : 'Add Account'}</h3>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-300">&times;</button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              autoFocus
+              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">Type</label>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value as AccountType)}
+              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+            >
+              {ACCOUNT_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-xs text-slate-500 mb-1">Currency</label>
+              <input
+                type="text"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value.toUpperCase())}
+                maxLength={5}
+                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs text-slate-500 mb-1">Institution</label>
+              <input
+                type="text"
+                value={institution}
+                onChange={(e) => setInstitution(e.target.value)}
+                placeholder="Optional"
+                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          {formError && <p className="text-xs text-red-400">{formError}</p>}
+
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-sm rounded text-slate-400 hover:text-slate-200 bg-slate-800 border border-slate-700"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : isEdit ? 'Update' : 'Create'}
             </button>
           </div>
         </form>

@@ -206,7 +206,7 @@ All routes currently return empty responses.
 - [x] Accounts grouped by type with balances
 - [x] Three-state indicators per account: reconciled (checkmark) / balanced (faded checkmark) / discrepancy (amber dot)
 - [x] Click to filter, net worth summary
-- [ ] Settings cog for account management
+- [x] Settings cog for account management
 
 ### 5.2 Transaction table
 - [x] Sortable table with inline editing
