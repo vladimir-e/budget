@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces",
-    "test": "npm test --workspace=lib",
+    "test": "npm test --workspace=lib && npm test --workspace=server",
     "lint": "eslint .",
     "dev:server": "npm run dev --workspace=server",
     "dev:ui": "npm run dev --workspace=ui"
