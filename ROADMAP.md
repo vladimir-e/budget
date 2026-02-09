@@ -229,17 +229,17 @@ All routes currently return empty responses.
 **Why**: The core budgeting experience — where you plan your money.
 
 ### 6.1 Budget table
-- [ ] Categories grouped by group, columns: assigned / spent / available
-- [ ] Inline editing of assigned amounts, group subtotals
+- [x] Categories grouped by group, columns: assigned / spent / available
+- [x] Inline editing of assigned amounts, group subtotals
 
 ### 6.2 Month navigation
-- [ ] Month selector, per-month spending data
+- [x] Month selector, per-month spending data
 
 ### 6.3 Category management
-- [ ] Add, edit, hide/unhide categories
+- [x] Add, edit, hide/unhide categories
 
 ### 6.4 Budget summary
-- [ ] Total budgeted vs spent vs available, "ready to assign"
+- [x] Total budgeted vs spent vs available, "ready to assign"
 
 ---
 

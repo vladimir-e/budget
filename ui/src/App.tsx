@@ -3,7 +3,7 @@ import { TransactionsScreen } from './screens/TransactionsScreen.tsx';
 import { BudgetScreen } from './screens/BudgetScreen.tsx';
 import { HelpScreen } from './screens/HelpScreen.tsx';
 
-type Screen = 'transactions' | 'categories' | 'help';
+type Screen = 'transactions' | 'budget' | 'help';
 
 export function App() {
   const [screen, setScreen] = useState<Screen>('transactions');
@@ -14,7 +14,7 @@ export function App() {
         <div className="flex items-center gap-6">
           <h1 className="text-base font-bold text-slate-100 tracking-tight">Budget</h1>
           <div className="flex gap-1">
-            {(['transactions', 'categories', 'help'] as const).map((tab) => (
+            {(['transactions', 'budget', 'help'] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setScreen(tab)}
@@ -24,7 +24,7 @@ export function App() {
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
                 }`}
               >
-                {tab === 'transactions' ? 'Transactions' : tab === 'categories' ? 'Categories' : 'Help'}
+                {tab === 'transactions' ? 'Transactions' : tab === 'budget' ? 'Budget' : 'Help'}
               </button>
             ))}
           </div>
@@ -32,7 +32,7 @@ export function App() {
       </nav>
       <main className="p-3">
         {screen === 'transactions' && <TransactionsScreen />}
-        {screen === 'categories' && <BudgetScreen />}
+        {screen === 'budget' && <BudgetScreen />}
         {screen === 'help' && <HelpScreen />}
       </main>
     </div>
