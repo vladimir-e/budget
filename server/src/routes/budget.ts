@@ -36,8 +36,14 @@ budgetRouter.get('/', (_req, res) => {
   const totalSpent = result.reduce((sum, c) => sum + c.spent, 0);
   const totalAvailable = result.reduce((sum, c) => sum + c.available, 0);
 
+  // Calculate total income for the period (income transactions in the filtered range)
+  const totalIncome = transactions
+    .filter((t) => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+
   res.json({
     categories: result,
     totals: { assigned: totalAssigned, spent: totalSpent, available: totalAvailable },
+    income: totalIncome,
   });
 });

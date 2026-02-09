@@ -6,6 +6,7 @@ import {
   createCategory as apiCreateCategory,
   hideCategory as apiHideCategory,
   deleteCategory as apiDeleteCategory,
+  unhideCategory as apiUnhideCategory,
 } from '../api/categories.ts';
 
 // ---------------------------------------------------------------------------
@@ -31,18 +32,28 @@ function formatMonth(month: string): string {
   return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 
+/** Parse a money string to integer cents, returning null if invalid or out of range */
+function parseMoneyInput(value: string): number | null {
+  const parsed = Math.round(parseFloat(value) * 100);
+  if (!Number.isFinite(parsed)) return null;
+  // Clamp to a sane range: +/- $100 million
+  if (Math.abs(parsed) > 10_000_000_00) return null;
+  return parsed;
+}
+
 // ---------------------------------------------------------------------------
 // Main Screen
 // ---------------------------------------------------------------------------
 
 export function BudgetScreen() {
-  const { budget, accounts, selectedMonth, selectMonth, loading, error, refresh, refreshBudget, refreshCategories } = useApp();
+  const { budget, categories, selectedMonth, selectMonth, loading, error, refresh, refreshBudget, refreshCategories } = useApp();
 
   const [editingAssignedId, setEditingAssignedId] = useState<string | null>(null);
   const [editingAssignedValue, setEditingAssignedValue] = useState('');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [editingCategory, setEditingCategory] = useState<BudgetCategory | null>(null);
   const [menuCategoryId, setMenuCategoryId] = useState<string | null>(null);
+  const [showHidden, setShowHidden] = useState(false);
 
   // Close context menu on outside click
   useEffect(() => {
@@ -52,16 +63,26 @@ export function BudgetScreen() {
     return () => document.removeEventListener('click', handler);
   }, [menuCategoryId]);
 
-  // Group categories
-  const grouped = (budget?.categories ?? []).reduce<Record<string, BudgetCategory[]>>(
+  // Group categories using Map to avoid prototype pollution
+  const grouped = (budget?.categories ?? []).reduce<Map<string, BudgetCategory[]>>(
     (acc, cat) => {
       const key = cat.group || 'Uncategorized';
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(cat);
+      let list = acc.get(key);
+      if (!list) {
+        list = [];
+        acc.set(key, list);
+      }
+      list.push(cat);
       return acc;
     },
-    {},
+    new Map(),
   );
+
+  // Hidden categories from the full categories list
+  const hiddenCategories = categories.filter((c) => c.hidden);
+
+  // Collect existing group names for the category form
+  const existingGroups = Array.from(grouped.keys());
 
   // --- Inline assigned editing ---
   const startEditAssigned = useCallback((cat: BudgetCategory) => {
@@ -76,8 +97,8 @@ export function BudgetScreen() {
 
   const saveAssigned = useCallback(async () => {
     if (!editingAssignedId) return;
-    const parsed = Math.round(parseFloat(editingAssignedValue) * 100);
-    if (isNaN(parsed)) {
+    const parsed = parseMoneyInput(editingAssignedValue);
+    if (parsed === null) {
       cancelEditAssigned();
       return;
     }
@@ -98,6 +119,13 @@ export function BudgetScreen() {
     } catch { /* ignore */ }
   }, [refreshBudget, refreshCategories]);
 
+  const handleUnhideCategory = useCallback(async (id: string) => {
+    try {
+      await apiUnhideCategory(id);
+      await Promise.all([refreshBudget(), refreshCategories()]);
+    } catch { /* ignore */ }
+  }, [refreshBudget, refreshCategories]);
+
   const handleDeleteCategory = useCallback(async (id: string) => {
     try {
       await apiDeleteCategory(id);
@@ -105,22 +133,20 @@ export function BudgetScreen() {
     } catch { /* ignore */ }
   }, [refresh]);
 
+  // Let errors propagate so the modal can display them
   const handleSaveCategory = useCallback(async (data: CreateCategoryInput | UpdateCategoryInput, id?: string) => {
-    try {
-      if (id) {
-        await apiUpdateCategory(id, data as UpdateCategoryInput);
-      } else {
-        await apiCreateCategory(data as CreateCategoryInput);
-      }
-      await Promise.all([refreshBudget(), refreshCategories()]);
-    } catch { /* ignore */ }
+    if (id) {
+      await apiUpdateCategory(id, data as UpdateCategoryInput);
+    } else {
+      await apiCreateCategory(data as CreateCategoryInput);
+    }
+    await Promise.all([refreshBudget(), refreshCategories()]);
   }, [refreshBudget, refreshCategories]);
 
-  // --- Compute total income for "ready to assign" ---
-  // Income for the month is total income transactions minus what's been assigned
-  const totalIncome = accounts.reduce((sum, a) => sum + a.workingBalance, 0);
+  // --- Ready to assign: income for the month minus total assigned ---
+  const monthlyIncome = budget?.income ?? 0;
   const totalAssigned = budget?.totals.assigned ?? 0;
-  const readyToAssign = totalIncome - totalAssigned;
+  const readyToAssign = monthlyIncome - totalAssigned;
 
   return (
     <div className="max-w-4xl">
@@ -154,6 +180,12 @@ export function BudgetScreen() {
             {/* Summary stats */}
             {budget && (
               <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-500 uppercase font-semibold tracking-wide">Income</span>
+                  <span className="tabular-nums font-medium text-green-400">
+                    {formatAmount(monthlyIncome)}
+                  </span>
+                </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-slate-500 uppercase font-semibold tracking-wide">Assigned</span>
                   <span className="tabular-nums font-medium text-slate-200">
@@ -192,12 +224,26 @@ export function BudgetScreen() {
       <div className="bg-slate-900 rounded-lg border border-slate-800 p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-slate-100">Budget Categories</h2>
-          <button
-            onClick={() => { setEditingCategory(null); setShowAddCategory(true); }}
-            className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700"
-          >
-            + Add Category
-          </button>
+          <div className="flex items-center gap-2">
+            {hiddenCategories.length > 0 && (
+              <button
+                onClick={() => setShowHidden((v) => !v)}
+                className={`text-xs font-medium px-2 py-0.5 rounded border ${
+                  showHidden
+                    ? 'bg-slate-700 text-slate-200 border-slate-600'
+                    : 'bg-slate-800 text-slate-500 hover:text-slate-300 border-slate-700'
+                }`}
+              >
+                {showHidden ? 'Hide hidden' : `Show hidden (${hiddenCategories.length})`}
+              </button>
+            )}
+            <button
+              onClick={() => { setEditingCategory(null); setShowAddCategory(true); }}
+              className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700"
+            >
+              + Add Category
+            </button>
+          </div>
         </div>
 
         {loading && <p className="text-sm text-slate-500">Loading...</p>}
@@ -219,7 +265,7 @@ export function BudgetScreen() {
               </tr>
             </thead>
             <tbody>
-              {Object.entries(grouped).map(([group, cats]) => (
+              {Array.from(grouped.entries()).map(([group, cats]) => (
                 <GroupRows
                   key={group}
                   group={group}
@@ -259,13 +305,36 @@ export function BudgetScreen() {
             </tfoot>
           </table>
         )}
+
+        {/* Hidden categories section */}
+        {showHidden && hiddenCategories.length > 0 && (
+          <div className="mt-4 border-t border-slate-700 pt-3">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Hidden Categories</h3>
+            <div className="space-y-1">
+              {hiddenCategories.map((cat) => (
+                <div key={cat.id} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-slate-800/30">
+                  <div>
+                    <span className="text-sm text-slate-400">{cat.name}</span>
+                    <span className="text-xs text-slate-600 ml-2">{cat.group}</span>
+                  </div>
+                  <button
+                    onClick={() => handleUnhideCategory(cat.id)}
+                    className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700"
+                  >
+                    Unhide
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add/Edit category modal */}
       {showAddCategory && (
         <CategoryFormModal
           category={editingCategory}
-          existingGroups={Object.keys(grouped)}
+          existingGroups={existingGroups}
           onClose={() => { setShowAddCategory(false); setEditingCategory(null); }}
           onSave={async (data) => {
             await handleSaveCategory(data, editingCategory?.id);
@@ -506,8 +575,12 @@ function CategoryFormModal({
     const finalGroup = useCustomGroup ? customGroup.trim() : group;
     if (!finalGroup) { setFormError('Group is required.'); return; }
 
-    const parsedAssigned = assigned ? Math.round(parseFloat(assigned) * 100) : 0;
-    if (assigned && isNaN(parsedAssigned)) { setFormError('Invalid assigned amount.'); return; }
+    let parsedAssigned = 0;
+    if (assigned) {
+      const result = parseMoneyInput(assigned);
+      if (result === null) { setFormError('Invalid assigned amount.'); return; }
+      parsedAssigned = result;
+    }
 
     setSaving(true);
     try {

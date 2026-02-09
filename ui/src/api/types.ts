@@ -66,6 +66,7 @@ export interface BudgetResponse {
     spent: number;
     available: number;
   };
+  income: number;
 }
 
 /** Import result from POST /api/transactions/import */
