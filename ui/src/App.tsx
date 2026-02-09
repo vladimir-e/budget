@@ -3,41 +3,36 @@ import { TransactionsScreen } from './screens/TransactionsScreen.tsx';
 import { BudgetScreen } from './screens/BudgetScreen.tsx';
 import { HelpScreen } from './screens/HelpScreen.tsx';
 
-type Screen = 'transactions' | 'budget' | 'help';
+type Screen = 'transactions' | 'categories' | 'help';
 
 export function App() {
   const [screen, setScreen] = useState<Screen>('transactions');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 px-4 py-3">
+    <div className="min-h-screen bg-slate-950">
+      <nav className="bg-slate-900 border-b border-slate-800 px-4 py-2">
         <div className="flex items-center gap-6">
-          <h1 className="text-lg font-semibold text-gray-900">PFS</h1>
-          <div className="flex gap-4">
-            <button
-              onClick={() => setScreen('transactions')}
-              className={`text-sm font-medium ${screen === 'transactions' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              Transactions
-            </button>
-            <button
-              onClick={() => setScreen('budget')}
-              className={`text-sm font-medium ${screen === 'budget' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              Budget
-            </button>
-            <button
-              onClick={() => setScreen('help')}
-              className={`text-sm font-medium ${screen === 'help' ? 'text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              Help
-            </button>
+          <h1 className="text-base font-bold text-slate-100 tracking-tight">Budget</h1>
+          <div className="flex gap-1">
+            {(['transactions', 'categories', 'help'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setScreen(tab)}
+                className={`text-sm font-medium px-3 py-1.5 rounded-md transition-colors ${
+                  screen === tab
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                {tab === 'transactions' ? 'Transactions' : tab === 'categories' ? 'Categories' : 'Help'}
+              </button>
+            ))}
           </div>
         </div>
       </nav>
-      <main className="p-4">
+      <main className="p-3">
         {screen === 'transactions' && <TransactionsScreen />}
-        {screen === 'budget' && <BudgetScreen />}
+        {screen === 'categories' && <BudgetScreen />}
         {screen === 'help' && <HelpScreen />}
       </main>
     </div>

@@ -1,5 +1,8 @@
 # Changelog
 
+## Phase 5 — UI: Transactions Screen
+Dark theme across all screens. Account sidebar with type grouping, collapsible sections, balance subtotals, and three-state reconciliation indicators (reconciled/balanced/discrepancy). Sortable transaction table with inline editing (click any cell to edit), color-coded amounts, and formatted dates. Filter bar with text search, category dropdown, and date range picker. Balance bar showing reported vs actual balance with reconcile-from-UI flow. Add transaction modal with expense/income/transfer modes and full validation.
+
 ## Phase 4 — UI: API Client & State
 Typed API client (`ui/src/api/`) for all server endpoints, React Context for app state (accounts, transactions, categories, budget, selected account/month), and wired screens to display live data.
 
