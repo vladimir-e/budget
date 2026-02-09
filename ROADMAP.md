@@ -248,11 +248,12 @@ All routes currently return empty responses.
 **Why**: Without import, manual entry is the only option — too tedious for real use.
 
 ### 7.1 CSV import UI
-- [ ] File upload, preview, dedup indicators, account selector
+- [x] IMPORT.md guide designed for AI assistance
+- [x] `/drop_files_here` dump folder and AI-assisted import
 
 ### 7.2 Parser infrastructure (`data/parsers/`)
-- [ ] Parser template and conventions
-- [ ] IMPORT.md guide for creating parsers (designed for AI assistance)
+- [ ] On-demand parsers for AI assisted import
+- [ ] Agent to maintain parsers up to date and make sure parser still works when new files uploaded, to avoid data corruption
 
 ### 7.3 Import archiving
 - [ ] After successful import, archive processed bank CSV to `data/imports/{account-slug}/YYYY-MM-DD_to_YYYY-MM-DD.csv`
@@ -266,23 +267,23 @@ All routes currently return empty responses.
 the system to use it and contribute. Docs also help during development.
 
 ### 8.1 SYSTEM.md
-- [ ] System overview and philosophy
-- [ ] Data model documentation (accounts, transactions, categories)
-- [ ] Core concepts: reconciliation, transfers, budgeting, uncategorized
-- [ ] Budget calculation: assigned vs spent vs available
+- [x] System overview and philosophy
+- [x] Data model documentation (accounts, transactions, categories)
+- [x] Core concepts: reconciliation, transfers, budgeting, uncategorized
+- [x] Budget calculation: assigned vs spent vs available
 
-### 8.2 Data conventions
-- [ ] Date formats (ISO 8601: YYYY-MM-DD for dates, full ISO for timestamps)
-- [ ] ID generation (auto-increment integers as strings)
-- [ ] Amount signs (negative = outflow, positive = inflow)
-- [ ] CSV rules (RFC 4180, UTF-8, no BOM on write)
-- [ ] Schema migration behavior
+### 8.2 Data conventions (in DESIGN.md)
+- [x] Date formats (ISO 8601: YYYY-MM-DD for dates, full ISO for timestamps)
+- [x] ID generation (auto-increment integers as strings)
+- [x] Amount signs (negative = outflow, positive = inflow)
+- [x] CSV rules (RFC 4180, UTF-8, no BOM on write)
+- [x] Schema migration behavior
 
-### 8.3 CLAUDE.md / AGENTS.md
-- [ ] Git workflow (main for framework, budget for personal data, rebase)
-- [ ] Coding conventions (FP style, Result types, no exceptions)
-- [ ] Testing requirements before committing
-- [ ] How AI agents should interact with the codebase
+### 8.3 AGENTS.md
+- [x] Git workflow (commit data frequently, git-based recovery)
+- [x] Coding conventions (FP style, Result types, no exceptions)
+- [x] Testing requirements before committing
+- [x] How AI agents should interact with the codebase
 
 ---
 
