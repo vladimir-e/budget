@@ -117,7 +117,7 @@ export function TransactionsScreen() {
       if (!cancelled) setAccountDetail(null);
     });
     return () => { cancelled = true; };
-  }, [selectedAccountId, accounts]);
+  }, [selectedAccountId]);
 
   // --- Lookups ---
   const accountMap = useMemo(() => {
@@ -229,18 +229,24 @@ export function TransactionsScreen() {
       await apiUpdateTxn(editingId, update);
       cancelEdit();
       await Promise.all([refreshTransactions(), refreshAccounts()]);
+      if (selectedAccountId) {
+        getAccount(selectedAccountId).then(setAccountDetail).catch(() => {});
+      }
     } catch {
       cancelEdit();
     }
-  }, [editingId, editField, editValue, cancelEdit, refreshTransactions, refreshAccounts]);
+  }, [editingId, editField, editValue, cancelEdit, refreshTransactions, refreshAccounts, selectedAccountId]);
 
   // --- Delete handler ---
   const handleDelete = useCallback(async (id: string) => {
     try {
       await apiDeleteTxn(id);
       await Promise.all([refreshTransactions(), refreshAccounts()]);
+      if (selectedAccountId) {
+        getAccount(selectedAccountId).then(setAccountDetail).catch(() => {});
+      }
     } catch { /* ignore */ }
-  }, [refreshTransactions, refreshAccounts]);
+  }, [refreshTransactions, refreshAccounts, selectedAccountId]);
 
   // --- Reconcile handler ---
   const handleReconcile = useCallback(async (reportedBalance: number) => {
@@ -263,8 +269,11 @@ export function TransactionsScreen() {
         await apiCreateAcct(data);
       }
       await refreshAccounts();
+      if (selectedAccountId) {
+        getAccount(selectedAccountId).then(setAccountDetail).catch(() => {});
+      }
     } catch { /* ignore */ }
-  }, [refreshAccounts]);
+  }, [refreshAccounts, selectedAccountId]);
 
   const handleHideAccount = useCallback(async (id: string) => {
     try {
@@ -336,6 +345,7 @@ export function TransactionsScreen() {
           transactionCount={filteredTransactions.length}
           onAdd={() => setShowAddForm(true)}
           onReconcile={handleReconcile}
+          hasAccounts={accounts.length > 0}
         />
 
         {/* Filters */}
@@ -642,12 +652,14 @@ function AccountHeader({
   transactionCount,
   onAdd,
   onReconcile,
+  hasAccounts,
 }: {
   selectedAccount: Account | null;
   accountDetail: AccountDetail | null;
   transactionCount: number;
   onAdd: () => void;
   onReconcile: (balance: number) => void;
+  hasAccounts: boolean;
 }) {
   const [showReconcileInput, setShowReconcileInput] = useState(false);
   const [reconcileValue, setReconcileValue] = useState('');
@@ -677,7 +689,9 @@ function AccountHeader({
           </h2>
           <button
             onClick={onAdd}
-            className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700"
+            disabled={!hasAccounts}
+            className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:bg-slate-800"
+            title={hasAccounts ? undefined : 'Create an account first'}
           >
             + Add
           </button>
@@ -841,17 +855,25 @@ function SortHeader({
   className?: string;
 }) {
   const active = current === field;
+  const ariaSortValue = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined;
   return (
     <th
-      className={`pb-2 px-3 font-medium cursor-pointer select-none hover:text-slate-300 ${className}`}
-      onClick={() => onToggle(field)}
+      className={`pb-2 px-3 font-medium ${className}`}
+      aria-sort={ariaSortValue}
     >
-      {label}
-      {active && (
-        <span className="ml-0.5 text-slate-400">
-          {dir === 'asc' ? ' \u2191' : ' \u2193'}
-        </span>
-      )}
+      <button
+        type="button"
+        onClick={() => onToggle(field)}
+        className="cursor-pointer select-none hover:text-slate-300 bg-transparent border-none p-0 text-inherit font-inherit text-left uppercase tracking-wide"
+        aria-label={`Sort by ${label}`}
+      >
+        {label}
+        {active && (
+          <span className="ml-0.5 text-slate-400">
+            {dir === 'asc' ? ' \u2191' : ' \u2193'}
+          </span>
+        )}
+      </button>
     </th>
   );
 }
@@ -915,12 +937,14 @@ function TransactionRow({
             className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm w-32 focus:outline-none focus:border-blue-500"
           />
         ) : (
-          <span
-            className="cursor-pointer hover:text-slate-200"
+          <button
+            type="button"
+            className="cursor-pointer hover:text-slate-200 bg-transparent border-none p-0 text-left text-inherit font-inherit"
             onClick={() => onStartEdit(txn.id, 'date', txn.date)}
+            aria-label={`Edit date: ${formatDate(txn.date)}`}
           >
             {formatDate(txn.date)}
-          </span>
+          </button>
         )}
       </td>
 
@@ -947,12 +971,14 @@ function TransactionRow({
             ))}
           </select>
         ) : (
-          <span
-            className="cursor-pointer hover:text-slate-200"
+          <button
+            type="button"
+            className="cursor-pointer hover:text-slate-200 bg-transparent border-none p-0 text-left text-inherit font-inherit"
             onClick={() => onStartEdit(txn.id, 'categoryId', txn.categoryId)}
+            aria-label={`Edit category: ${catName}`}
           >
             {catName}
-          </span>
+          </button>
         )}
       </td>
 
@@ -969,12 +995,14 @@ function TransactionRow({
             className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm w-full focus:outline-none focus:border-blue-500"
           />
         ) : (
-          <span
-            className="cursor-pointer hover:text-blue-300"
+          <button
+            type="button"
+            className="cursor-pointer hover:text-blue-300 bg-transparent border-none p-0 text-left text-inherit font-inherit"
             onClick={() => onStartEdit(txn.id, 'description', txn.description)}
+            aria-label={`Edit description: ${txn.description || 'empty'}`}
           >
             {txn.description || '\u2014'}
-          </span>
+          </button>
         )}
       </td>
 
@@ -990,15 +1018,24 @@ function TransactionRow({
             autoFocus
             className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm w-24 text-right focus:outline-none focus:border-blue-500"
           />
-        ) : (
+        ) : txn.transferPairId ? (
           <span
-            className={`cursor-pointer ${
-              txn.amount > 0 ? 'text-green-400' : txn.amount < 0 ? 'text-red-400' : 'text-slate-400'
-            }`}
-            onClick={() => onStartEdit(txn.id, 'amount', String(txn.amount / 100))}
+            className={`${txn.amount > 0 ? 'text-green-400' : txn.amount < 0 ? 'text-red-400' : 'text-slate-400'}`}
+            title="Transfer amounts cannot be edited directly"
           >
             {formatAmount(txn.amount)}
           </span>
+        ) : (
+          <button
+            type="button"
+            className={`cursor-pointer bg-transparent border-none p-0 text-right text-inherit font-inherit ${
+              txn.amount > 0 ? 'text-green-400' : txn.amount < 0 ? 'text-red-400' : 'text-slate-400'
+            }`}
+            onClick={() => onStartEdit(txn.id, 'amount', String(txn.amount / 100))}
+            aria-label={`Edit amount: ${formatAmount(txn.amount)}`}
+          >
+            {formatAmount(txn.amount)}
+          </button>
         )}
       </td>
 
@@ -1056,6 +1093,11 @@ function AddTransactionModal({
     e.preventDefault();
     setFormError('');
 
+    if (!accountId) {
+      setFormError('No account selected. Create an account first.');
+      return;
+    }
+
     const parsed = Math.round(parseFloat(amount) * 100);
     if (isNaN(parsed) || parsed <= 0) {
       setFormError('Enter a valid positive amount.');
@@ -1098,14 +1140,21 @@ function AddTransactionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/60" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/60"
+      onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Add Transaction"
+    >
       <div
         className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-md p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-100">Add Transaction</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-300">&times;</button>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-300" aria-label="Close modal">&times;</button>
         </div>
 
         {/* Mode tabs */}
@@ -1291,14 +1340,21 @@ function AccountFormModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/60" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/60"
+      onClick={onClose}
+      onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={isEdit ? 'Edit Account' : 'Add Account'}
+    >
       <div
         className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-sm p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-slate-100">{isEdit ? 'Edit Account' : 'Add Account'}</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-300">&times;</button>
+          <button onClick={onClose} className="text-slate-500 hover:text-slate-300" aria-label="Close modal">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
