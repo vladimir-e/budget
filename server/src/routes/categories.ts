@@ -6,6 +6,7 @@ import {
   updateCategory,
   deleteCategory,
   hideCategory,
+  unhideCategory,
 } from '@pfs/lib';
 import { getStore, mutate } from '../storeManager.js';
 
@@ -49,6 +50,17 @@ categoriesRouter.put('/:id', async (req, res) => {
   }
   const updated = result.value.categories.find((c) => c.id === req.params.id);
   res.json(updated);
+});
+
+// POST /api/categories/:id/unhide — restore a hidden category
+categoriesRouter.post('/:id/unhide', async (req, res) => {
+  const result = await mutate((store) => unhideCategory(store, req.params.id));
+  if (!result.ok) {
+    res.status(404).json({ error: result.error });
+    return;
+  }
+  const restored = result.value.categories.find((c) => c.id === req.params.id);
+  res.json(restored);
 });
 
 // DELETE /api/categories/:id — delete or hide category

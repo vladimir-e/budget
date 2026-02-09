@@ -131,6 +131,18 @@ export function hideCategory(store: DataStore, id: string): Result<DataStore> {
   return ok({ ...store, categories });
 }
 
+/** Unhide a category by setting hidden=false */
+export function unhideCategory(store: DataStore, id: string): Result<DataStore> {
+  const index = store.categories.findIndex((c) => c.id === id);
+  if (index === -1) {
+    return err(`Category not found: ${id}`);
+  }
+
+  const categories = [...store.categories];
+  categories[index] = { ...categories[index], hidden: false };
+  return ok({ ...store, categories });
+}
+
 /** Hard-delete a category — nullifies categoryId on ALL referencing transactions */
 export function deleteCategory(store: DataStore, id: string): Result<DataStore> {
   const index = store.categories.findIndex((c) => c.id === id);

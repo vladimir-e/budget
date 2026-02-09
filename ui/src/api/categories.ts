@@ -34,3 +34,8 @@ export function hideCategory(id: string): Promise<void> {
 export function deleteCategory(id: string): Promise<void> {
   return del(`/api/categories/${id}?mode=hard`);
 }
+
+/** Unhide a previously hidden category */
+export function unhideCategory(id: string): Promise<Category> {
+  return post<Category>(`/api/categories/${id}/unhide`, {});
+}
