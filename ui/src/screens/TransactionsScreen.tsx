@@ -191,15 +191,13 @@ export function TransactionsScreen() {
 
   // --- Sort toggle handler ---
   const toggleSort = useCallback((field: SortField) => {
-    setSortField((prev) => {
-      if (prev === field) {
-        setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
-        return field;
-      }
+    if (field === sortField) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
       setSortDir(field === 'amount' ? 'desc' : 'asc');
-      return field;
-    });
-  }, []);
+    }
+  }, [sortField]);
 
   // --- Inline edit handlers ---
   const startEdit = useCallback((txnId: string, field: string, currentValue: string) => {
