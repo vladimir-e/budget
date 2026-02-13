@@ -6,6 +6,26 @@ This document describes how AI agents should handle bank CSV imports.
 
 The user exports a CSV from their bank and drops it in the `drop_files_here/` folder. The AI agent analyzes the file, maps it to PFS's data model, and imports the transactions via the API. The goal: the user drops files and watches balanced accounts appear in the UI.
 
+## Before you start: clarify with the user
+
+Every import source is different. Before writing code or calling APIs, ask the user about these decisions:
+
+### Accounts
+- **Create new or map to existing?** If PFS already has accounts, the import file's accounts might correspond to existing ones. Ask the user to confirm the mapping rather than creating duplicates.
+- **Import all accounts or a subset?** Budget app exports may contain dozens of accounts, many closed. Ask which ones to import, or suggest importing only active ones and creating closed accounts as hidden.
+- **Account types.** PFS supports: `checking`, `savings`, `credit_card`, `loan`, `cash`, `asset`, `crypto`. The source may use different names. Confirm the mapping.
+
+### Categories
+- **Import source categories or use PFS's?** PFS comes with 18 simple categories. Budget app exports often have 30-50 granular categories. The user might prefers PFS's simpler structure. Ask if they want to import their old categories, or map them to PFS's ones?"
+- **Build a category mapping.** If mapping, enumerate all source categories and propose a mapping to PFS categories. Let the user review and adjust before importing.
+- **Handle unmapped categories.** Decide with the user: import as uncategorized, or create new PFS categories for gaps?
+
+### Transfers
+- Skipping transfers might make account balances wrong — credit card payments, savings moves, and inter-account transfers must be represented. PFS creates transfers as linked pairs via `POST /api/transactions` with `fromAccountId` and `toAccountId`.
+
+### Scale
+- **Large imports (100+ transactions, multiple accounts):** Write a script in `data/parsers`. Scripts are reusable, testable, and can handle batching, error recovery, and dry-run mode.
+
 ## Step-by-step
 
 ### 1. Detect the file
@@ -18,29 +38,37 @@ ls drop_files_here/
 
 Read the file to understand its format. Bank CSVs vary wildly — different column names, date formats, amount representations, and layouts.
 
-### 2. Determine the budget state
+### 2. Determine the source type
+
+**Bank statement CSV**:
+- Single account per file
+- Usually no information about categories, try categorizing
+- Try to identify transfers and do you best to match accounts
+- Help user categorize transactions and clean up the data after import
+
+**Budget app export**:
+- Multiple accounts in one file
+- Includes categories, transfer links, notes
+- May have account metadata in a separate file
+- Complex: requires a script (see "Large imports" below)
+
+### 3. Determine the budget state
 
 Check if this is a fresh setup or an existing budget:
 
 ```bash
-# Check for existing accounts
 curl http://localhost:3001/api/accounts
-
-# Or read the CSV directly
-cat data/accounts.csv
 ```
 
 **Fresh setup (no accounts):**
-- You need to create the account first
-- Ask the user: What bank is this from? What type of account (checking, savings, credit card)?
-- Look at the CSV for clues — the filename often contains the bank name, and the data may include the account number
-- Set the starting balance from the CSV: use the earliest balance or calculate from transactions if available
+- Create accounts first, either from the import file or by asking the user
+- Review the starter categories with the user
 
 **Existing budget:**
-- Match the file to an existing account by bank name, account type, or ask the user
-- The account already has an ID — you'll use it for the import
+- Match import accounts to existing PFS accounts by name
+- Ask the user to confirm ambiguous matches
 
-### 3. Analyze the CSV format
+### 4. Analyze the CSV format
 
 Common patterns in bank exports:
 
@@ -56,50 +84,40 @@ Common patterns in bank exports:
 - **Amount** → `amount` (must be integer cents, negative for expenses)
 - **Description/Memo** → `description`
 - **Payee/Merchant** → `payee` (if available)
-- **Type** → `type` (`expense` for outflows, `income` for inflows)
+- **Type** → `type` (`expense` for outflows, `income` for inflows, `transfer` for transfers)
 
-### 4. Write or use a parser
+**Amount conversion:** Source files often use decimals (-30.50). PFS uses integer cents (-3050). Multiply by 100 and round: `Math.round(parseFloat(amount) * 100)`.
 
-Check if a parser exists for this bank:
+### 5. Write a parser or script
+
+**For small, single-account imports:** Parse inline and call the API directly.
+
+**For large or multi-account imports:** Write a script in `data/parsers/`. A good import script should:
+
+- **Batch transactions** — import in groups of 500 to avoid timeouts
+- **Handle transfers** — match transfer pairs and use the transfer API
+- **Map categories** — build a mapping from source categories to PFS category IDs
+- **Report results** — show counts of imported, skipped, categorized, uncategorized, and failed
+
+Check if a parser exists for this source:
 
 ```bash
 ls data/parsers/
 ```
+But double check if it's up to date and able to handle provided file.
 
-If no parser exists, write one. Parsers live in `data/parsers/` and are TypeScript/JavaScript files that export a function to convert bank CSV rows to PFS transaction format.
-
-**Parser requirements:**
-- Handle the bank's specific date format
-- Handle the bank's amount format (single column, debit/credit split, etc.)
-- Convert amounts to integer cents (multiply by 100 for USD)
-- Make amounts negative for expenses, positive for income
-- Extract description and payee where possible
-- Set `type` to `expense` or `income` based on amount sign
-- Set `source` to `"import"`
-
-**Example parser structure:**
-
-```typescript
-// data/parsers/chase-checking.ts
-export function parseChaseChecking(csvContent: string): ParsedTransaction[] {
-  // Parse CSV rows
-  // Map: Details → description, Amount (negative=expense), Posting Date → date
-  // Return array of { type, date, amount, description, payee, source: 'import' }
-}
-```
-
-### 5. Commit before import
-
-Commit the current state before importing:
+### 6. Commit before import
 
 ```bash
 git add data/
 git commit -m "pre-import: snapshot before chase checking import"
 ```
 
-### 6. Import via API
+### 7. Import via API
 
-Start the server if not running (`npm run dev`), then call the import endpoint:
+Start the server if not running (`npm run dev`), then import.
+
+**Regular transactions** use the batch endpoint:
 
 ```bash
 curl -X POST http://localhost:3001/api/transactions/import \
@@ -113,16 +131,28 @@ curl -X POST http://localhost:3001/api/transactions/import \
   }'
 ```
 
+**Transfers** use the single transaction endpoint:
+
+```bash
+curl -X POST http://localhost:3001/api/transactions \
+  -H 'Content-Type: application/json' \
+  -d '{"fromAccountId": "1", "toAccountId": "2", "amount": 50000, "date": "2025-01-15", "description": "CC Payment"}'
+```
+
+This creates two linked transactions (outflow + inflow) with matching `transferPairId`. The `amount` is the absolute value — the API negates the outflow side automatically.
+
 **The import endpoint handles deduplication automatically.** If you import the same file twice, duplicates are skipped. The dedup key is `date|accountId|amount|description`.
 
-### 7. Commit after import
+**Note:** The transfer endpoint does NOT deduplicate. If you re-run a script that creates transfers, you'll get duplicates. To re-import cleanly, clear the data files first (see "Re-importing" below).
+
+### 8. Commit after import
 
 ```bash
 git add data/
 git commit -m "import: chase checking 2025-01 (47 transactions, 3 duplicates skipped)"
 ```
 
-### 8. Archive the source file
+### 9. Archive the source file
 
 Move the processed bank CSV to the archive:
 
@@ -133,11 +163,11 @@ git add data/imports/ drop_files_here/
 git commit -m "archive: chase checking 2025-01 source file"
 ```
 
-This preserves the original bank file for re-import or debugging.
+This preserves the original file for re-import or debugging.
 
-### 9. Help categorize
+### 10. Help categorize
 
-After import, transactions are uncategorized (`categoryId = ""`). Help the user categorize them:
+After import, bank-sourced transactions are uncategorized (`categoryId = ""`). Help the user categorize them:
 
 - Look at descriptions and payees to suggest categories
 - Group similar transactions: all "WHOLE FOODS" → Groceries, all "NETFLIX" → Entertainment
@@ -151,19 +181,25 @@ curl -X PUT http://localhost:3001/api/transactions/42 \
 
 Commit after bulk categorization.
 
+## Handling transfers
+
+Transfers are critical for correct account balances. Without them, credit card payments show as expenses from checking but never arrive at the credit card, making both accounts look wrong.
+
+### How bank CSVs show transfers
+
+Bank exports don't label transfers explicitly. Look for:
+- Payments to credit cards (description contains "PAYMENT", "AUTOPAY", or the card name)
+- Transfers between accounts ("TRANSFER", "ONLINE TRANSFER", "XFER")
+- Matching amounts between accounts on the same date
+
+For bank CSVs, it may be easier to import everything as regular transactions first, then help the user identify and convert transfers.
+
+
 ## Handling edge cases
 
 ### Credit cards
 
 Credit card transactions are typically all expenses (negative amounts). Payments to the card from a checking account should be recorded as transfers, not expenses, to avoid double-counting.
-
-If you see a payment that matches a checking account outflow, create a transfer instead:
-
-```bash
-curl -X POST http://localhost:3001/api/transactions \
-  -H 'Content-Type: application/json' \
-  -d '{"fromAccountId": "1", "toAccountId": "2", "amount": 50000, "date": "2025-01-15", "description": "CC Payment"}'
-```
 
 ### Multiple currencies
 
@@ -183,11 +219,12 @@ If the user imports January and February statements that overlap by a few days, 
 
 ### Bank CSV quirks
 
-- **BOM (Byte Order Mark)**: The CSV parser handles this automatically
+- **BOM (Byte Order Mark)**: Strip with `.replace(/^\uFEFF/, '')` before parsing
 - **Extra header rows**: Some banks add summary rows at the top. Skip non-data rows.
 - **Footer rows**: Some banks add totals at the bottom. Skip these too.
-- **Quoted fields with commas**: RFC 4180 handles this. Use the built-in parser.
+- **Quoted fields with commas**: RFC 4180 handles this. Use a proper CSV parser.
 - **Different encodings**: Convert to UTF-8 before parsing if needed.
+- **Decimal amounts**: Source files use decimals, PFS uses integer cents. Always `Math.round()` after multiplying to avoid floating-point drift.
 
 ## Parser maintenance
 

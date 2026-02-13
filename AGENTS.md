@@ -15,6 +15,7 @@ PFS uses git to track all changes to financial data. This gives the user full hi
 - **Commit data files frequently.** After any operation that changes CSV files in `data/`, commit immediately. Use descriptive messages like `import: chase checking 2025-01 (47 transactions)` or `categorize: assign groceries to 12 transactions`.
 - **Commit before AND after import operations.** This gives the user a clean rollback point.
 - **Never force-push.** History is sacred for financial data.
+- **Never revert or rewrite git history.** Do not use `git revert` or `git reset` to undo data changes. Instead, make a **new forward commit** that corrects the data. Every state must be preserved in history — if something goes wrong, the user should be able to `git log` and see exactly what happened at each step. Use git for investigation (`git log`, `git diff`, `git show`) but never to alter history.
 
 ### First-time setup
 
@@ -64,7 +65,7 @@ When the user explicitly asks you to work on the PFS application itself — modi
 
 ## Using the API
 
-The server runs on `localhost:3001`. Start it with `npm run dev` or `npm start`.
+The server runs on `localhost:3001`. The user usually has it running already (`npm run dev`). Before making API calls, check if it's up with `curl -s http://localhost:3001/api/accounts`. If it's not running, start it — but **never kill an existing process on the port**. If port 3001 is in use, assume the user's server is running and use it. Don't start your own background server process that will conflict with theirs.
 
 ### Creating accounts
 
