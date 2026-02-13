@@ -151,7 +151,7 @@ export function BudgetScreen() {
   return (
     <div className="max-w-4xl">
       {/* Budget summary bar */}
-      <div className="bg-slate-900 rounded-lg border border-slate-800 px-4 py-3 mb-3">
+      <div className="bg-surface rounded-lg border border-edge px-4 py-3 mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
             {/* Month navigation */}
@@ -160,18 +160,18 @@ export function BudgetScreen() {
                 type="button"
                 aria-label="Previous month"
                 onClick={() => selectMonth(offsetMonth(selectedMonth, -1))}
-                className="text-sm text-slate-400 hover:text-slate-200 px-1"
+                className="text-sm text-muted hover:text-body px-1"
               >
                 &larr;
               </button>
-              <span className="text-sm font-semibold text-slate-100 min-w-[150px] text-center">
+              <span className="text-sm font-semibold text-heading min-w-[150px] text-center">
                 {formatMonth(selectedMonth)}
               </span>
               <button
                 type="button"
                 aria-label="Next month"
                 onClick={() => selectMonth(offsetMonth(selectedMonth, 1))}
-                className="text-sm text-slate-400 hover:text-slate-200 px-1"
+                className="text-sm text-muted hover:text-body px-1"
               >
                 &rarr;
               </button>
@@ -179,28 +179,28 @@ export function BudgetScreen() {
 
             {/* Summary stats */}
             {budget && (
-              <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-5 text-xs">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500 uppercase font-semibold tracking-wide">Income</span>
-                  <span className="tabular-nums font-medium text-green-400">
+                  <span className="text-muted uppercase font-semibold tracking-wider">Income</span>
+                  <span className="tabular-nums font-semibold text-positive">
                     {formatAmount(monthlyIncome)}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500 uppercase font-semibold tracking-wide">Assigned</span>
-                  <span className="tabular-nums font-medium text-slate-200">
+                  <span className="text-muted uppercase font-semibold tracking-wider">Assigned</span>
+                  <span className="tabular-nums font-semibold text-body">
                     {formatAmount(budget.totals.assigned)}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500 uppercase font-semibold tracking-wide">Spent</span>
-                  <span className="tabular-nums font-medium text-slate-300">
+                  <span className="text-muted uppercase font-semibold tracking-wider">Spent</span>
+                  <span className="tabular-nums font-semibold text-label">
                     {formatAmount(budget.totals.spent)}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-slate-500 uppercase font-semibold tracking-wide">Available</span>
-                  <span className={`tabular-nums font-medium ${budget.totals.available >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  <span className="text-muted uppercase font-semibold tracking-wider">Available</span>
+                  <span className={`tabular-nums font-semibold ${budget.totals.available >= 0 ? 'text-positive' : 'text-negative'}`}>
                     {formatAmount(budget.totals.available)}
                   </span>
                 </div>
@@ -210,9 +210,9 @@ export function BudgetScreen() {
 
           {/* Ready to assign */}
           {budget && (
-            <div className={`text-right px-3 py-1 rounded ${readyToAssign >= 0 ? 'bg-green-900/30' : 'bg-red-900/30'}`}>
-              <div className="text-[10px] text-slate-500 uppercase font-semibold tracking-wide">Ready to Assign</div>
-              <div className={`text-sm tabular-nums font-bold ${readyToAssign >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`text-right px-3 py-1 rounded ${readyToAssign >= 0 ? 'bg-positive-surface' : 'bg-negative-surface'}`}>
+              <div className="text-[10px] text-dim uppercase font-semibold tracking-wide">Ready to Assign</div>
+              <div className={`text-sm tabular-nums font-bold ${readyToAssign >= 0 ? 'text-positive' : 'text-negative'}`}>
                 {formatAmount(readyToAssign)}
               </div>
             </div>
@@ -221,17 +221,17 @@ export function BudgetScreen() {
       </div>
 
       {/* Budget table */}
-      <div className="bg-slate-900 rounded-lg border border-slate-800 p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-semibold text-slate-100">Budget Categories</h2>
+      <div className="bg-surface rounded-lg border border-edge p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-heading">Budget Categories</h2>
           <div className="flex items-center gap-2">
             {hiddenCategories.length > 0 && (
               <button
                 onClick={() => setShowHidden((v) => !v)}
                 className={`text-xs font-medium px-2 py-0.5 rounded border ${
                   showHidden
-                    ? 'bg-slate-700 text-slate-200 border-slate-600'
-                    : 'bg-slate-800 text-slate-500 hover:text-slate-300 border-slate-700'
+                    ? 'bg-hover text-body border-edge-accent'
+                    : 'bg-elevated text-dim hover:text-label border-edge-strong'
                 }`}
               >
                 {showHidden ? 'Hide hidden' : `Show hidden (${hiddenCategories.length})`}
@@ -239,29 +239,29 @@ export function BudgetScreen() {
             )}
             <button
               onClick={() => { setEditingCategory(null); setShowAddCategory(true); }}
-              className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700"
+              className="text-xs font-medium px-2 py-0.5 rounded bg-elevated text-muted hover:text-body hover:bg-hover border border-edge-strong"
             >
               + Add Category
             </button>
           </div>
         </div>
 
-        {loading && <p className="text-sm text-slate-500">Loading...</p>}
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {loading && <p className="text-sm text-dim">Loading...</p>}
+        {error && <p className="text-sm text-negative">{error}</p>}
 
         {!loading && !budget?.categories.length && (
-          <p className="text-sm text-slate-500">No budget categories configured yet. Add a category to get started.</p>
+          <p className="text-sm text-dim">No budget categories configured yet. Add a category to get started.</p>
         )}
 
         {budget && budget.categories.length > 0 && (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-700">
-                <th className="pb-2 font-medium">Category</th>
-                <th className="pb-2 font-medium text-right pr-2">Assigned</th>
-                <th className="pb-2 font-medium text-right">Spent</th>
-                <th className="pb-2 font-medium text-right">Available</th>
-                <th className="pb-2 font-medium w-8"></th>
+              <tr className="text-left text-[11px] text-muted uppercase tracking-wider border-b border-edge-strong">
+                <th className="py-3 px-1 font-semibold">Category</th>
+                <th className="py-3 font-semibold text-right pr-2">Assigned</th>
+                <th className="py-3 font-semibold text-right">Spent</th>
+                <th className="py-3 font-semibold text-right">Available</th>
+                <th className="py-3 font-semibold w-8"></th>
               </tr>
             </thead>
             <tbody>
@@ -285,17 +285,17 @@ export function BudgetScreen() {
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t-2 border-slate-600 font-medium text-slate-100">
-                <td className="pt-2">Total</td>
-                <td className="pt-2 text-right tabular-nums pr-2">
+              <tr className="border-t-2 border-edge-accent font-semibold text-heading">
+                <td className="pt-3 pb-1 px-1">Total</td>
+                <td className="pt-3 pb-1 text-right tabular-nums pr-2">
                   {formatAmount(budget.totals.assigned)}
                 </td>
-                <td className="pt-2 text-right tabular-nums">
+                <td className="pt-3 pb-1 text-right tabular-nums">
                   {formatAmount(budget.totals.spent)}
                 </td>
                 <td
-                  className={`pt-2 text-right tabular-nums ${
-                    budget.totals.available >= 0 ? 'text-green-400' : 'text-red-400'
+                  className={`pt-3 pb-1 text-right tabular-nums ${
+                    budget.totals.available >= 0 ? 'text-positive' : 'text-negative'
                   }`}
                 >
                   {formatAmount(budget.totals.available)}
@@ -308,18 +308,18 @@ export function BudgetScreen() {
 
         {/* Hidden categories section */}
         {showHidden && hiddenCategories.length > 0 && (
-          <div className="mt-4 border-t border-slate-700 pt-3">
-            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Hidden Categories</h3>
+          <div className="mt-4 border-t border-edge-strong pt-3">
+            <h3 className="text-xs font-semibold text-dim uppercase tracking-wide mb-2">Hidden Categories</h3>
             <div className="space-y-1">
               {hiddenCategories.map((cat) => (
-                <div key={cat.id} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-slate-800/30">
+                <div key={cat.id} className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-elevated/30">
                   <div>
-                    <span className="text-sm text-slate-400">{cat.name}</span>
-                    <span className="text-xs text-slate-600 ml-2">{cat.group}</span>
+                    <span className="text-sm text-muted">{cat.name}</span>
+                    <span className="text-xs text-faint ml-2">{cat.group}</span>
                   </div>
                   <button
                     onClick={() => handleUnhideCategory(cat.id)}
-                    className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700"
+                    className="text-xs font-medium px-2 py-0.5 rounded bg-elevated text-muted hover:text-body hover:bg-hover border border-edge-strong"
                   >
                     Unhide
                   </button>
@@ -386,17 +386,17 @@ function GroupRows({
 
   return (
     <>
-      <tr className="bg-slate-800/50">
-        <td className="py-1.5 px-1 font-medium text-slate-300" colSpan={1}>
+      <tr className="bg-elevated/40">
+        <td className="py-2.5 px-1 font-semibold text-body text-[13px]" colSpan={1}>
           {group}
         </td>
-        <td className="py-1.5 text-right tabular-nums text-slate-500 text-xs pr-2">
+        <td className="py-2.5 text-right tabular-nums text-dim text-xs pr-2">
           {formatAmount(groupAssigned)}
         </td>
-        <td className="py-1.5 text-right tabular-nums text-slate-500 text-xs">
+        <td className="py-2.5 text-right tabular-nums text-dim text-xs">
           {formatAmount(groupSpent)}
         </td>
-        <td className="py-1.5 text-right tabular-nums text-slate-500 text-xs">
+        <td className="py-2.5 text-right tabular-nums text-dim text-xs">
           {formatAmount(groupAvailable)}
         </td>
         <td></td>
@@ -469,11 +469,11 @@ function CategoryRow({
   };
 
   return (
-    <tr className="border-b border-slate-800 hover:bg-slate-800/30 group/cat">
-      <td className="py-1.5 pl-4 text-slate-200">{cat.name}</td>
+    <tr className="border-b border-edge/40 hover:bg-elevated/20 group/cat">
+      <td className="py-2.5 pl-5 text-body">{cat.name}</td>
 
       {/* Assigned - editable */}
-      <td className="py-1.5 text-right tabular-nums text-slate-300 pr-2">
+      <td className="py-2.5 text-right tabular-nums text-label pr-2">
         {isEditingAssigned ? (
           <input
             ref={inputRef}
@@ -483,12 +483,12 @@ function CategoryRow({
             onChange={(e) => onEditAssignedChange(e.target.value)}
             onBlur={onSaveAssigned}
             onKeyDown={handleKeyDown}
-            className="bg-slate-800 border border-slate-600 rounded px-1.5 py-0.5 text-slate-200 text-sm w-24 text-right focus:outline-none focus:border-blue-500"
+            className="bg-elevated border border-edge-accent rounded px-1.5 py-0.5 text-body text-sm w-24 text-right focus:outline-none focus:border-accent"
           />
         ) : (
           <button
             type="button"
-            className="cursor-pointer hover:text-blue-300 bg-transparent border-none p-0 text-right text-inherit font-inherit tabular-nums"
+            className="cursor-pointer hover:text-accent-text bg-transparent border-none p-0 text-right text-inherit font-inherit tabular-nums"
             onClick={() => onStartEditAssigned(cat)}
             aria-label={`Edit assigned amount for ${cat.name}: ${formatAmount(cat.assigned)}`}
           >
@@ -497,41 +497,41 @@ function CategoryRow({
         )}
       </td>
 
-      <td className="py-1.5 text-right tabular-nums text-slate-300">{formatAmount(cat.spent)}</td>
+      <td className="py-2.5 text-right tabular-nums text-label">{formatAmount(cat.spent)}</td>
       <td
-        className={`py-1.5 text-right tabular-nums font-medium ${
-          cat.available >= 0 ? 'text-green-400' : 'text-red-400'
+        className={`py-2.5 text-right tabular-nums font-medium ${
+          cat.available >= 0 ? 'text-positive' : 'text-negative'
         }`}
       >
         {formatAmount(cat.available)}
       </td>
 
       {/* Context menu */}
-      <td className="py-1.5 px-1 text-center relative">
+      <td className="py-2.5 px-1 text-center relative">
         <button
           onClick={(e) => { e.stopPropagation(); onMenuToggle(menuCategoryId === cat.id ? null : cat.id); }}
-          className="text-slate-500 hover:text-slate-300 opacity-70 group-hover/cat:opacity-100 transition-opacity text-xs px-1"
+          className="text-dim hover:text-label opacity-70 group-hover/cat:opacity-100 transition-opacity text-xs px-1"
           title="Category options"
         >
           &#8943;
         </button>
         {menuCategoryId === cat.id && (
-          <div className="absolute right-0 top-full z-30 bg-slate-800 border border-slate-700 rounded shadow-lg py-1 min-w-[120px]">
+          <div className="absolute right-0 top-full z-30 bg-elevated border border-edge-strong rounded shadow-lg py-1 min-w-[120px]">
             <button
               onClick={(e) => { e.stopPropagation(); onEditCategory(cat); }}
-              className="w-full text-left text-xs px-3 py-1.5 text-slate-300 hover:bg-slate-700"
+              className="w-full text-left text-xs px-3 py-1.5 text-label hover:bg-hover"
             >
               Edit
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onHideCategory(cat.id); }}
-              className="w-full text-left text-xs px-3 py-1.5 text-slate-300 hover:bg-slate-700"
+              className="w-full text-left text-xs px-3 py-1.5 text-label hover:bg-hover"
             >
               Hide
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); onDeleteCategory(cat.id); }}
-              className="w-full text-left text-xs px-3 py-1.5 text-red-400 hover:bg-slate-700"
+              className="w-full text-left text-xs px-3 py-1.5 text-negative hover:bg-hover"
             >
               Delete
             </button>
@@ -612,36 +612,36 @@ function CategoryFormModal({
       aria-label={isEdit ? 'Edit Category' : 'Add Category'}
     >
       <div
-        className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-sm p-5"
+        className="bg-surface border border-edge-strong rounded-lg shadow-xl w-full max-w-sm p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-100">{isEdit ? 'Edit Category' : 'Add Category'}</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-300" aria-label="Close modal">&times;</button>
+          <h3 className="text-sm font-semibold text-heading">{isEdit ? 'Edit Category' : 'Add Category'}</h3>
+          <button onClick={onClose} className="text-dim hover:text-label" aria-label="Close modal">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Name */}
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Name</label>
+            <label className="block text-xs text-dim mb-1">Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
             />
           </div>
 
           {/* Group */}
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Group</label>
+            <label className="block text-xs text-dim mb-1">Group</label>
             {!useCustomGroup && existingGroups.length > 0 ? (
               <div className="flex gap-2">
                 <select
                   value={group}
                   onChange={(e) => setGroup(e.target.value)}
-                  className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                  className="flex-1 bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
                 >
                   <option value="">Select group...</option>
                   {existingGroups.map((g) => (
@@ -651,7 +651,7 @@ function CategoryFormModal({
                 <button
                   type="button"
                   onClick={() => setUseCustomGroup(true)}
-                  className="text-xs text-slate-400 hover:text-slate-200 px-2"
+                  className="text-xs text-muted hover:text-body px-2"
                   title="Create new group"
                 >
                   + New
@@ -664,13 +664,13 @@ function CategoryFormModal({
                   value={customGroup}
                   onChange={(e) => setCustomGroup(e.target.value)}
                   placeholder="New group name"
-                  className="flex-1 bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                  className="flex-1 bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body placeholder-faint focus:outline-none focus:border-accent"
                 />
                 {existingGroups.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setUseCustomGroup(false)}
-                    className="text-xs text-slate-400 hover:text-slate-200 px-2"
+                    className="text-xs text-muted hover:text-body px-2"
                   >
                     Existing
                   </button>
@@ -681,31 +681,31 @@ function CategoryFormModal({
 
           {/* Assigned amount */}
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Monthly Budget</label>
+            <label className="block text-xs text-dim mb-1">Monthly Budget</label>
             <input
               type="text"
               inputMode="decimal"
               placeholder="0.00"
               value={assigned}
               onChange={(e) => setAssigned(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500"
+              className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body placeholder-faint focus:outline-none focus:border-accent"
             />
           </div>
 
-          {formError && <p className="text-xs text-red-400">{formError}</p>}
+          {formError && <p className="text-xs text-negative">{formError}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-sm rounded text-slate-400 hover:text-slate-200 bg-slate-800 border border-slate-700"
+              className="px-3 py-1.5 text-sm rounded text-muted hover:text-body bg-elevated border border-edge-strong"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
+              className="px-3 py-1.5 text-sm rounded bg-accent text-white hover:bg-blue-500 disabled:opacity-50"
             >
               {saving ? 'Saving...' : isEdit ? 'Update' : 'Create'}
             </button>

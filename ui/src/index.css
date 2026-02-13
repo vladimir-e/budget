@@ -3,6 +3,71 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light theme (default) ────────────────────────────────── */
+  :root {
+    --color-page: 248 250 252;        /* slate-50 */
+    --color-surface: 255 255 255;     /* white */
+    --color-elevated: 226 232 240;    /* slate-200 */
+    --color-hover: 203 213 225;       /* slate-300 */
+
+    --color-edge: 226 232 240;        /* slate-200 */
+    --color-edge-strong: 203 213 225; /* slate-300 */
+    --color-edge-accent: 148 163 184; /* slate-400 */
+
+    --color-heading: 15 23 42;        /* slate-900 */
+    --color-body: 30 41 59;           /* slate-800 */
+    --color-label: 51 65 85;          /* slate-700 */
+    --color-muted: 100 116 139;       /* slate-500 */
+    --color-dim: 148 163 184;         /* slate-400 */
+    --color-faint: 203 213 225;       /* slate-300 */
+
+    --color-positive: 22 163 74;      /* green-600 */
+    --color-negative: 220 38 38;      /* red-600 */
+    --color-warning: 217 119 6;       /* amber-600 */
+    --color-accent: 37 99 235;        /* blue-600 */
+    --color-accent-text: 37 99 235;   /* blue-600 */
+
+    --surface-positive: rgb(240 253 244);  /* green-50 */
+    --surface-negative: rgb(254 242 242);  /* red-50 */
+    --surface-accent: rgb(219 234 254);    /* blue-100 */
+
+    --scrollbar-thumb: rgb(203 213 225);
+    --scrollbar-thumb-hover: rgb(148 163 184);
+  }
+
+  /* ── Dark theme ───────────────────────────────────────────── */
+  .dark {
+    --color-page: 2 6 23;             /* slate-950 */
+    --color-surface: 15 23 42;        /* slate-900 */
+    --color-elevated: 30 41 59;       /* slate-800 */
+    --color-hover: 51 65 85;          /* slate-700 */
+
+    --color-edge: 30 41 59;           /* slate-800 */
+    --color-edge-strong: 51 65 85;    /* slate-700 */
+    --color-edge-accent: 71 85 105;   /* slate-600 */
+
+    --color-heading: 241 245 249;     /* slate-100 */
+    --color-body: 226 232 240;        /* slate-200 */
+    --color-label: 203 213 225;       /* slate-300 */
+    --color-muted: 148 163 184;       /* slate-400 */
+    --color-dim: 100 116 139;         /* slate-500 */
+    --color-faint: 71 85 105;         /* slate-600 */
+
+    --color-positive: 74 222 128;     /* green-400 */
+    --color-negative: 248 113 113;    /* red-400 */
+    --color-warning: 251 191 36;      /* amber-400 */
+    --color-accent: 37 99 235;        /* blue-600 */
+    --color-accent-text: 147 197 253; /* blue-300 */
+
+    --surface-positive: rgb(20 83 45 / 0.3);   /* green-900/30 */
+    --surface-negative: rgb(127 29 29 / 0.3);  /* red-900/30 */
+    --surface-accent: rgb(30 58 138 / 0.3);    /* blue-900/30 */
+
+    --scrollbar-thumb: rgb(51 65 85);
+    --scrollbar-thumb-hover: rgb(71 85 105);
+  }
+
+  /* ── Scrollbar ────────────────────────────────────────────── */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -11,14 +76,33 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgb(51 65 85);
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgb(71 85 105);
+    background: var(--scrollbar-thumb-hover);
   }
 
-  input[type="date"]::-webkit-calendar-picker-indicator {
+  /* ── Date picker icon — invert only in dark mode ──────────── */
+  .dark input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(0.7);
+  }
+
+  ::selection {
+    background: rgb(59 130 246 / 0.3);
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px !important;
+    appearance: none;
+    -webkit-appearance: none;
   }
 }
