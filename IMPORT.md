@@ -24,7 +24,10 @@ Every import source is different. Before writing code or calling APIs, ask the u
 - Skipping transfers might make account balances wrong — credit card payments, savings moves, and inter-account transfers must be represented. PFS creates transfers as linked pairs via `POST /api/transactions` with `fromAccountId` and `toAccountId`.
 
 ### Scale
-- **Large imports (100+ transactions, multiple accounts):** Write a script in `data/parsers`. Scripts are reusable, testable, and can handle batching, error recovery, and dry-run mode.
+- **Large imports (100+ transactions, multiple accounts):** Write a script in `scripts/`. Scripts are reusable, testable, and can handle batching, error recovery, and dry-run mode.
+
+### Analysis
+- **Write code to analyze complex data.** Don't try to eyeball CSVs or run one-off shell commands for large datasets. Write a quick Node.js analysis script (e.g., `scripts/analyze-*.mjs`) that parses the file and prints summaries — unique accounts, category counts, date ranges, transfer patterns, etc. This is faster and less error-prone than manual inspection.
 
 ## Step-by-step
 
