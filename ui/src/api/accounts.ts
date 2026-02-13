@@ -11,6 +11,11 @@ export function listAccounts(): Promise<Account[]> {
   return get<Account[]>('/api/accounts');
 }
 
+/** List hidden (closed) accounts */
+export function listHiddenAccounts(): Promise<Account[]> {
+  return get<Account[]>('/api/accounts/hidden');
+}
+
 /** Get a single account with balance and discrepancy info */
 export function getAccount(id: string): Promise<AccountDetail> {
   return get<AccountDetail>(`/api/accounts/${id}`);
@@ -29,6 +34,11 @@ export function updateAccount(id: string, data: UpdateAccountInput): Promise<Acc
 /** Hide an account (soft delete) */
 export function hideAccount(id: string): Promise<void> {
   return del(`/api/accounts/${id}?mode=hide`);
+}
+
+/** Restore a hidden account */
+export function unhideAccount(id: string): Promise<Account> {
+  return post<Account>(`/api/accounts/${id}/unhide`, {});
 }
 
 /** Delete an account permanently (blocked if it has transactions) */

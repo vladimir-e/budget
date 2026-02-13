@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   getVisibleAccounts,
+  getHiddenAccounts,
   getAccountById,
   calculateWorkingBalance,
   getBalanceDiscrepancy,
@@ -8,6 +9,7 @@ import {
   updateAccount,
   deleteAccount,
   hideAccount,
+  unhideAccount,
   reconcileAccount,
 } from '@pfs/lib';
 import { getStore, mutate } from '../storeManager.js';
@@ -18,6 +20,17 @@ export const accountsRouter = Router();
 accountsRouter.get('/', (_req, res) => {
   const store = getStore();
   const accounts = getVisibleAccounts(store.accounts);
+  const result = accounts.map((a) => {
+    const workingBalance = calculateWorkingBalance(a.id, store.transactions);
+    return { ...a, workingBalance };
+  });
+  res.json(result);
+});
+
+// GET /api/accounts/hidden — list hidden (closed) accounts
+accountsRouter.get('/hidden', (_req, res) => {
+  const store = getStore();
+  const accounts = getHiddenAccounts(store.accounts);
   const result = accounts.map((a) => {
     const workingBalance = calculateWorkingBalance(a.id, store.transactions);
     return { ...a, workingBalance };
@@ -76,6 +89,18 @@ accountsRouter.delete('/:id', async (req, res) => {
     return;
   }
   res.status(204).send();
+});
+
+// POST /api/accounts/:id/unhide — restore a hidden account
+accountsRouter.post('/:id/unhide', async (req, res) => {
+  const result = await mutate((store) => unhideAccount(store, req.params.id));
+  if (!result.ok) {
+    const status = result.error.includes('not found') ? 404 : 400;
+    res.status(status).json({ error: result.error });
+    return;
+  }
+  const account = result.value.accounts.find((a) => a.id === req.params.id);
+  res.json(account);
 });
 
 // POST /api/accounts/:id/reconcile — reconcile account

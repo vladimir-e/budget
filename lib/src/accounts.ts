@@ -130,6 +130,23 @@ export function hideAccount(store: DataStore, id: string): Result<DataStore> {
   return ok({ ...store, accounts });
 }
 
+/** Restore a hidden account by setting hidden=false */
+export function unhideAccount(store: DataStore, id: string): Result<DataStore> {
+  const index = store.accounts.findIndex((a) => a.id === id);
+  if (index === -1) {
+    return err(`Account not found: ${id}`);
+  }
+
+  const accounts = [...store.accounts];
+  accounts[index] = { ...accounts[index], hidden: false };
+  return ok({ ...store, accounts });
+}
+
+/** Get hidden accounts */
+export function getHiddenAccounts(records: Account[]): Account[] {
+  return records.filter((a) => a.hidden);
+}
+
 /** Hard-delete an account — BLOCKED if any transactions reference it */
 export function deleteAccount(store: DataStore, id: string): Result<DataStore> {
   const index = store.accounts.findIndex((a) => a.id === id);

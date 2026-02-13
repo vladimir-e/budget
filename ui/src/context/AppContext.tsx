@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Account, Transaction, Category, BudgetResponse } from '../api/types.ts';
-import { listAccounts } from '../api/accounts.ts';
+import { listAccounts, listHiddenAccounts } from '../api/accounts.ts';
 import { listTransactions, type TransactionFilters } from '../api/transactions.ts';
 import { listCategories } from '../api/categories.ts';
 import { getBudget } from '../api/budget.ts';
@@ -20,6 +20,7 @@ import { getBudget } from '../api/budget.ts';
 interface AppState {
   // Data
   accounts: Account[];
+  hiddenAccounts: Account[];
   transactions: Transaction[];
   categories: Category[];
   budget: BudgetResponse | null;
@@ -43,7 +44,7 @@ interface AppActions {
   /** Refetch all data (call after any mutation) */
   refresh: () => Promise<void>;
 
-  /** Refetch only accounts */
+  /** Refetch only accounts (visible + hidden) */
   refreshAccounts: () => Promise<void>;
 
   /** Refetch only transactions (respects current filters) */
@@ -78,6 +79,7 @@ function currentMonth(): string {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [hiddenAccounts, setHiddenAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [budget, setBudget] = useState<BudgetResponse | null>(null);
@@ -102,8 +104,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ---- Stable fetch helpers (use refs, never change identity) -------------
 
   const refreshAccounts = useCallback(async () => {
-    const data = await listAccounts();
-    setAccounts(data);
+    const [visible, hidden] = await Promise.all([listAccounts(), listHiddenAccounts()]);
+    setAccounts(visible);
+    setHiddenAccounts(hidden);
   }, []);
 
   const refreshTransactions = useCallback(async () => {
@@ -188,6 +191,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const value: AppContextValue = {
     accounts,
+    hiddenAccounts,
     transactions,
     categories,
     budget,

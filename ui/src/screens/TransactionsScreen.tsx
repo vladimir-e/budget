@@ -8,6 +8,7 @@ import {
   updateAccount as apiUpdateAcct,
   hideAccount as apiHideAcct,
   deleteAccount as apiDeleteAcct,
+  unhideAccount as apiUnhideAcct,
 } from '../api/accounts.ts';
 import type { AccountType, CreateAccountInput } from '../api/types.ts';
 import {
@@ -75,7 +76,7 @@ function accountReconState(acct: Account): 'reconciled' | 'balanced' | 'discrepa
 
 export function TransactionsScreen() {
   const {
-    accounts, transactions, categories,
+    accounts, hiddenAccounts, transactions, categories,
     selectedAccountId, selectAccount,
     loading, error,
     refresh, refreshAccounts, refreshTransactions,
@@ -291,6 +292,13 @@ export function TransactionsScreen() {
     } catch { /* ignore - API returns 409 if has transactions */ }
   }, [refreshAccounts, selectedAccountId, selectAccount]);
 
+  const handleUnhideAccount = useCallback(async (id: string) => {
+    try {
+      await apiUnhideAcct(id);
+      await refreshAccounts();
+    } catch { /* ignore */ }
+  }, [refreshAccounts]);
+
   // --- Account sidebar grouping ---
   const groupedAccounts = useMemo(() => {
     const groups: { type: Account['type']; label: string; accounts: Account[]; total: number }[] = [];
@@ -325,6 +333,7 @@ export function TransactionsScreen() {
       {/* === Account Sidebar === */}
       <AccountSidebar
         groupedAccounts={groupedAccounts}
+        hiddenAccounts={hiddenAccounts}
         netWorth={netWorth}
         selectedAccountId={selectedAccountId}
         selectAccount={selectAccount}
@@ -334,6 +343,7 @@ export function TransactionsScreen() {
         onEditAccount={(a) => { setEditingAccount(a); setShowAccountForm(true); }}
         onHideAccount={handleHideAccount}
         onDeleteAccount={handleDeleteAccount}
+        onUnhideAccount={handleUnhideAccount}
       />
 
       {/* === Main Content === */}
@@ -487,6 +497,7 @@ export function TransactionsScreen() {
 
 function AccountSidebar({
   groupedAccounts,
+  hiddenAccounts,
   netWorth,
   selectedAccountId,
   selectAccount,
@@ -496,8 +507,10 @@ function AccountSidebar({
   onEditAccount,
   onHideAccount,
   onDeleteAccount,
+  onUnhideAccount,
 }: {
   groupedAccounts: { type: Account['type']; label: string; accounts: Account[]; total: number }[];
+  hiddenAccounts: Account[];
   netWorth: number;
   selectedAccountId: string | null;
   selectAccount: (id: string | null) => void;
@@ -507,9 +520,11 @@ function AccountSidebar({
   onEditAccount: (a: Account) => void;
   onHideAccount: (id: string) => void;
   onDeleteAccount: (id: string) => void;
+  onUnhideAccount: (id: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
   const [menuAccountId, setMenuAccountId] = useState<string | null>(null);
+  const [closedExpanded, setClosedExpanded] = useState(false);
 
   const toggle = (type: string) => {
     setCollapsed((prev) => {
@@ -536,7 +551,7 @@ function AccountSidebar({
         {/* All Accounts */}
         <button
           onClick={() => selectAccount(null)}
-          className={`w-full text-left text-sm px-3 py-1.5 flex justify-between items-center ${
+          className={`w-full text-left text-sm pl-3 pr-8 py-1.5 flex justify-between items-center ${
             selectedAccountId === null
               ? 'bg-slate-800 text-slate-100'
               : 'text-slate-300 hover:bg-slate-800/50'
@@ -554,7 +569,7 @@ function AccountSidebar({
             {/* Group header */}
             <button
               onClick={() => toggle(group.type)}
-              className="w-full text-left px-3 py-1 mt-1 flex justify-between items-center text-slate-500 hover:text-slate-300"
+              className="w-full text-left pl-3 pr-8 py-1 mt-1 flex justify-between items-center text-slate-500 hover:text-slate-300"
             >
               <span className="text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1">
                 <span className="text-[8px]">{collapsed.has(group.type) ? '\u25B8' : '\u25BE'}</span>
@@ -572,7 +587,7 @@ function AccountSidebar({
                 <div key={a.id} className="relative group/acct">
                   <button
                     onClick={() => selectAccount(a.id)}
-                    className={`w-full text-left text-sm pl-4 pr-3 py-1 flex items-center gap-1.5 ${
+                    className={`w-full text-left text-sm pl-4 pr-8 py-1 flex items-center gap-1.5 ${
                       selectedAccountId === a.id
                         ? 'bg-blue-900/30 text-blue-300'
                         : 'text-slate-300 hover:bg-slate-800/50'
@@ -592,10 +607,10 @@ function AccountSidebar({
                     </span>
                   </button>
 
-                  {/* Context menu trigger */}
+                  {/* Context menu trigger — always visible but subtle; lights up on hover */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setMenuAccountId(menuAccountId === a.id ? null : a.id); }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 opacity-70 group-hover/acct:opacity-100 transition-opacity text-xs px-1"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-700 hover:text-slate-300 transition-colors text-xs px-1"
                     title="Account settings"
                   >
                     &#9881;
@@ -629,6 +644,37 @@ function AccountSidebar({
             })}
           </div>
         ))}
+
+        {/* Closed Accounts */}
+        {hiddenAccounts.length > 0 && (
+          <div className="mt-1 border-t border-slate-800">
+            <button
+              onClick={() => setClosedExpanded((v) => !v)}
+              className="w-full text-left px-3 py-1 mt-1 flex items-center gap-1 text-slate-600 hover:text-slate-400"
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1">
+                <span className="text-[8px]">{closedExpanded ? '\u25BE' : '\u25B8'}</span>
+                Closed
+                <span className="text-slate-700 font-normal ml-0.5">({hiddenAccounts.length})</span>
+              </span>
+            </button>
+
+            {closedExpanded && hiddenAccounts.map((a) => (
+              <div key={a.id} className="relative group/acct">
+                <div className="w-full text-left text-sm pl-4 pr-3 py-1 flex items-center gap-1.5 text-slate-600">
+                  <span className="truncate flex-1">{a.name}</span>
+                  <button
+                    onClick={() => onUnhideAccount(a.id)}
+                    className="text-[10px] text-slate-600 hover:text-slate-300 opacity-0 group-hover/acct:opacity-100 transition-opacity shrink-0"
+                    title="Restore account"
+                  >
+                    Restore
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Add Account button */}
         <button
