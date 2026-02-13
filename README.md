@@ -30,7 +30,13 @@ The recommended workflow uses an AI coding assistant (Claude Code, Cursor, Codex
 
 The AI assistant commits your data changes to git automatically, giving you full history and undo capability. If something goes wrong, you can always roll back.
 
-**Important:** Your financial data is stored in CSV files tracked by git. Do not push this repository to a public remote. Keep it local or use a private repository.
+**Important:** Your financial data is stored in CSV files tracked by git. Do not push this repository to a public remote. Keep it local or use a private repository. As a safeguard, disable push on the remote:
+
+```bash
+git remote set-url --push origin no_push
+```
+
+This allows `git pull` to fetch updates but blocks `git push` from accidentally uploading your data.
 
 ## Project Structure
 
