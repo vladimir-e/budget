@@ -327,7 +327,7 @@ export function TransactionsScreen() {
   }, [categories]);
 
   return (
-    <div className="flex gap-3 items-start">
+    <div className="flex gap-4 items-start">
       {/* === Account Sidebar === */}
       <AccountSidebar
         groupedAccounts={groupedAccounts}
@@ -370,18 +370,18 @@ export function TransactionsScreen() {
         />
 
         {/* Transaction table */}
-        <div className="bg-slate-900 rounded-lg border border-slate-800">
-          {loading && <p className="text-sm text-slate-500 p-4">Loading...</p>}
-          {error && <p className="text-sm text-red-400 p-4">{error}</p>}
+        <div className="bg-surface rounded-lg border border-edge">
+          {loading && <p className="text-sm text-dim p-4">Loading...</p>}
+          {error && <p className="text-sm text-negative p-4">{error}</p>}
 
           {!loading && filteredTransactions.length === 0 && (
-            <p className="text-sm text-slate-500 p-4">No transactions.</p>
+            <p className="text-sm text-dim p-4">No transactions.</p>
           )}
 
           {pagedTransactions.length > 0 && (
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs text-slate-500 uppercase tracking-wide border-b border-slate-700">
+                <tr className="text-left text-[11px] text-muted uppercase tracking-wider border-b border-edge-strong">
                   <SortHeader field="date" label="Date" current={sortField} dir={sortDir} onToggle={toggleSort} />
                   {!selectedAccountId && (
                     <SortHeader field="account" label="Account" current={sortField} dir={sortDir} onToggle={toggleSort} />
@@ -389,7 +389,7 @@ export function TransactionsScreen() {
                   <SortHeader field="category" label="Category" current={sortField} dir={sortDir} onToggle={toggleSort} />
                   <SortHeader field="description" label="Description" current={sortField} dir={sortDir} onToggle={toggleSort} />
                   <SortHeader field="amount" label="Amount" current={sortField} dir={sortDir} onToggle={toggleSort} className="text-right" />
-                  <th className="pb-2 px-3 font-medium w-8"></th>
+                  <th className="py-3 px-3 font-medium w-8"></th>
                 </tr>
               </thead>
               <tbody>
@@ -417,7 +417,7 @@ export function TransactionsScreen() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-3 py-2 border-t border-slate-800 text-xs text-slate-500">
+            <div className="flex items-center justify-between px-4 py-2.5 border-t border-edge text-xs text-dim">
               <span>
                 {((page - 1) * PAGE_SIZE) + 1}&ndash;{Math.min(page * PAGE_SIZE, filteredTransactions.length)} of {filteredTransactions.length.toLocaleString()}
               </span>
@@ -425,31 +425,31 @@ export function TransactionsScreen() {
                 <button
                   onClick={() => setPage(1)}
                   disabled={page === 1}
-                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                  className="px-2 py-1 rounded hover:bg-elevated disabled:opacity-30 disabled:cursor-default"
                 >
                   &laquo;
                 </button>
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                  className="px-2 py-1 rounded hover:bg-elevated disabled:opacity-30 disabled:cursor-default"
                 >
                   &lsaquo;
                 </button>
-                <span className="px-2 text-slate-400">
+                <span className="px-2 text-muted">
                   {page} / {totalPages}
                 </span>
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                  className="px-2 py-1 rounded hover:bg-elevated disabled:opacity-30 disabled:cursor-default"
                 >
                   &rsaquo;
                 </button>
                 <button
                   onClick={() => setPage(totalPages)}
                   disabled={page === totalPages}
-                  className="px-2 py-1 rounded hover:bg-slate-800 disabled:opacity-30 disabled:cursor-default"
+                  className="px-2 py-1 rounded hover:bg-elevated disabled:opacity-30 disabled:cursor-default"
                 >
                   &raquo;
                 </button>
@@ -541,22 +541,22 @@ function AccountSidebar({
   }, [menuAccountId]);
 
   return (
-    <aside className="w-56 shrink-0">
-      <div className="bg-slate-900 rounded-lg border border-slate-800 py-2">
-        {loading && <p className="text-xs text-slate-500 px-3 py-1">Loading...</p>}
-        {error && <p className="text-xs text-red-400 px-3 py-1">{error}</p>}
+    <aside className="w-60 shrink-0">
+      <div className="bg-surface rounded-lg border border-edge py-2">
+        {loading && <p className="text-xs text-dim px-3 py-1">Loading...</p>}
+        {error && <p className="text-xs text-negative px-3 py-1">{error}</p>}
 
         {/* All Accounts */}
         <button
           onClick={() => selectAccount(null)}
-          className={`w-full text-left text-sm pl-3 pr-8 py-1.5 flex justify-between items-center ${
+          className={`w-full text-left text-sm pl-3 pr-3 py-2 flex justify-between items-center ${
             selectedAccountId === null
-              ? 'bg-slate-800 text-slate-100'
-              : 'text-slate-300 hover:bg-slate-800/50'
+              ? 'bg-elevated text-heading'
+              : 'text-body hover:bg-elevated/50'
           }`}
         >
           <span className="font-medium">All Accounts</span>
-          <span className={`tabular-nums text-xs font-medium ${netWorth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          <span className={`tabular-nums text-xs font-semibold ${netWorth >= 0 ? 'text-positive' : 'text-negative'}`}>
             {formatAmount(netWorth)}
           </span>
         </button>
@@ -567,13 +567,13 @@ function AccountSidebar({
             {/* Group header */}
             <button
               onClick={() => toggle(group.type)}
-              className="w-full text-left pl-3 pr-8 py-1 mt-1 flex justify-between items-center text-slate-500 hover:text-slate-300"
+              className="w-full text-left pl-3 pr-3 py-1.5 mt-1 flex justify-between items-center text-dim hover:text-label"
             >
               <span className="text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1">
                 <span className="text-[8px]">{collapsed.has(group.type) ? '\u25B8' : '\u25BE'}</span>
                 {group.label}
               </span>
-              <span className={`tabular-nums text-[10px] font-medium ${group.total >= 0 ? 'text-slate-400' : 'text-red-400'}`}>
+              <span className={`tabular-nums text-[10px] font-medium ${group.total >= 0 ? 'text-muted' : 'text-negative'}`}>
                 {formatAmount(group.total)}
               </span>
             </button>
@@ -585,21 +585,21 @@ function AccountSidebar({
                 <div key={a.id} className="relative group/acct">
                   <button
                     onClick={() => selectAccount(a.id)}
-                    className={`w-full text-left text-sm pl-4 pr-8 py-1 flex items-center gap-1.5 ${
+                    className={`w-full text-left text-sm pl-4 pr-8 py-1.5 flex items-center gap-1.5 ${
                       selectedAccountId === a.id
-                        ? 'bg-blue-900/30 text-blue-300'
-                        : 'text-slate-300 hover:bg-slate-800/50'
+                        ? 'bg-accent-surface text-accent-text'
+                        : 'text-label hover:bg-elevated/50'
                     }`}
                   >
                     {/* Reconciliation indicator */}
-                    <span className="w-3 text-center shrink-0">
-                      {state === 'reconciled' && <span className="text-green-400 text-xs">&#10003;</span>}
-                      {state === 'balanced' && <span className="text-slate-600 text-xs">&#10003;</span>}
-                      {state === 'discrepancy' && <span className="text-amber-400 text-[8px]">&#9679;</span>}
+                    <span className="w-3.5 text-center shrink-0">
+                      {state === 'reconciled' && <span className="text-positive text-xs">&#10003;</span>}
+                      {state === 'balanced' && <span className="text-faint text-xs">&#10003;</span>}
+                      {state === 'discrepancy' && <span className="text-warning text-[9px]">&#9679;</span>}
                     </span>
                     <span className="truncate flex-1">{a.name}</span>
-                    <span className={`tabular-nums text-xs ml-1 shrink-0 ${
-                      a.workingBalance >= 0 ? 'text-slate-400' : 'text-red-400'
+                    <span className={`tabular-nums text-xs ml-1 shrink-0 font-medium ${
+                      a.workingBalance >= 0 ? 'text-muted' : 'text-negative'
                     }`}>
                       {formatAmount(a.workingBalance)}
                     </span>
@@ -608,7 +608,7 @@ function AccountSidebar({
                   {/* Context menu trigger — always visible but subtle; lights up on hover */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setMenuAccountId(menuAccountId === a.id ? null : a.id); }}
-                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-700 hover:text-slate-300 transition-colors text-xs px-1"
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 text-faint hover:text-label transition-colors text-xs px-1"
                     title="Account settings"
                   >
                     &#9881;
@@ -616,22 +616,22 @@ function AccountSidebar({
 
                   {/* Context menu dropdown */}
                   {menuAccountId === a.id && (
-                    <div className="absolute right-0 top-full z-30 bg-slate-800 border border-slate-700 rounded shadow-lg py-1 min-w-[120px]">
+                    <div className="absolute right-0 top-full z-30 bg-elevated border border-edge-strong rounded shadow-lg py-1 min-w-[120px]">
                       <button
                         onClick={(e) => { e.stopPropagation(); setMenuAccountId(null); onEditAccount(a); }}
-                        className="w-full text-left text-xs px-3 py-1.5 text-slate-300 hover:bg-slate-700"
+                        className="w-full text-left text-xs px-3 py-1.5 text-label hover:bg-hover"
                       >
                         Edit
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setMenuAccountId(null); onHideAccount(a.id); }}
-                        className="w-full text-left text-xs px-3 py-1.5 text-slate-300 hover:bg-slate-700"
+                        className="w-full text-left text-xs px-3 py-1.5 text-label hover:bg-hover"
                       >
                         Hide
                       </button>
                       <button
                         onClick={(e) => { e.stopPropagation(); setMenuAccountId(null); onDeleteAccount(a.id); }}
-                        className="w-full text-left text-xs px-3 py-1.5 text-red-400 hover:bg-slate-700"
+                        className="w-full text-left text-xs px-3 py-1.5 text-negative hover:bg-hover"
                       >
                         Delete
                       </button>
@@ -645,25 +645,25 @@ function AccountSidebar({
 
         {/* Closed Accounts */}
         {hiddenAccounts.length > 0 && (
-          <div className="mt-1 border-t border-slate-800">
+          <div className="mt-1 border-t border-edge">
             <button
               onClick={() => setClosedExpanded((v) => !v)}
-              className="w-full text-left px-3 py-1 mt-1 flex items-center gap-1 text-slate-600 hover:text-slate-400"
+              className="w-full text-left px-3 py-1 mt-1 flex items-center gap-1 text-faint hover:text-muted"
             >
               <span className="text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1">
                 <span className="text-[8px]">{closedExpanded ? '\u25BE' : '\u25B8'}</span>
                 Closed
-                <span className="text-slate-700 font-normal ml-0.5">({hiddenAccounts.length})</span>
+                <span className="text-faint font-normal ml-0.5">({hiddenAccounts.length})</span>
               </span>
             </button>
 
             {closedExpanded && hiddenAccounts.map((a) => (
               <div key={a.id} className="relative group/acct">
-                <div className="w-full text-left text-sm pl-4 pr-3 py-1 flex items-center gap-1.5 text-slate-600">
+                <div className="w-full text-left text-sm pl-4 pr-3 py-1 flex items-center gap-1.5 text-faint">
                   <span className="truncate flex-1">{a.name}</span>
                   <button
                     onClick={() => onUnhideAccount(a.id)}
-                    className="text-[10px] text-slate-600 hover:text-slate-300 opacity-0 group-hover/acct:opacity-100 transition-opacity shrink-0"
+                    className="text-[10px] text-faint hover:text-label opacity-0 group-hover/acct:opacity-100 transition-opacity shrink-0"
                     title="Restore account"
                   >
                     Restore
@@ -677,7 +677,7 @@ function AccountSidebar({
         {/* Add Account button */}
         <button
           onClick={onAddAccount}
-          className="w-full text-left text-xs px-3 py-1.5 mt-1 text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+          className="w-full text-left text-xs px-3 py-1.5 mt-1 text-dim hover:text-label hover:bg-elevated/50"
         >
           + Add Account
         </button>
@@ -726,46 +726,46 @@ function AccountHeader({
   return (
     <div className="mb-3">
       {/* Top row: account name + add button + count */}
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <h2 className="text-base font-semibold text-slate-100">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-heading">
             {selectedAccount ? selectedAccount.name : 'All Accounts'}
           </h2>
           <button
             onClick={onAdd}
             disabled={!hasAccounts}
-            className="text-xs font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-slate-400 disabled:hover:bg-slate-800"
+            className="text-xs font-medium px-2 py-0.5 rounded bg-elevated text-muted hover:text-body hover:bg-hover border border-edge-strong disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-muted disabled:hover:bg-elevated"
             title={hasAccounts ? undefined : 'Create an account first'}
           >
             + Add
           </button>
         </div>
-        <span className="text-xs text-slate-500">{formatCount(transactionCount)} transactions</span>
+        <span className="text-xs text-dim">{formatCount(transactionCount)} transactions</span>
       </div>
 
       {/* Balance bar — only when a specific account is selected */}
       {selectedAccount && accountDetail && (
-        <div className="bg-slate-900 rounded-lg border border-slate-800 px-4 py-2 mb-3 flex items-center gap-4 text-xs">
-          <span className="text-slate-500 uppercase font-semibold tracking-wide">Balance</span>
+        <div className="bg-surface rounded-lg border border-edge px-4 py-2.5 mb-4 flex items-center gap-5 text-xs">
+          <span className="text-muted uppercase font-semibold tracking-wider">Balance</span>
 
           <div className="flex items-center gap-1">
-            <span className="text-slate-500">Reported</span>
-            <span className="tabular-nums font-semibold text-slate-200 bg-slate-800 px-2 py-0.5 rounded">
+            <span className="text-dim">Reported</span>
+            <span className="tabular-nums font-semibold text-body bg-elevated px-2 py-0.5 rounded">
               {formatAmount(selectedAccount.balance)}
             </span>
           </div>
 
           <div className="flex items-center gap-1">
-            <span className="text-slate-500">Actual</span>
-            <span className={`tabular-nums font-semibold ${selectedAccount.workingBalance >= 0 ? 'text-slate-200' : 'text-red-400'}`}>
+            <span className="text-dim">Actual</span>
+            <span className={`tabular-nums font-semibold ${selectedAccount.workingBalance >= 0 ? 'text-body' : 'text-negative'}`}>
               {formatAmount(selectedAccount.workingBalance)}
             </span>
           </div>
 
           {accountDetail.discrepancy !== 0 && (
             <div className="flex items-center gap-1">
-              <span className="text-slate-500">Off by</span>
-              <span className="tabular-nums font-semibold text-amber-400">
+              <span className="text-dim">Off by</span>
+              <span className="tabular-nums font-semibold text-warning">
                 {formatAmountAbs(accountDetail.discrepancy)}
               </span>
             </div>
@@ -784,17 +784,17 @@ function AccountHeader({
                   if (e.key === 'Enter') handleReconcileSubmit();
                   if (e.key === 'Escape') { setShowReconcileInput(false); setReconcileValue(''); }
                 }}
-                className="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-slate-200 w-32 text-xs focus:outline-none focus:border-blue-500"
+                className="bg-elevated border border-edge-accent rounded px-2 py-0.5 text-body w-32 text-xs focus:outline-none focus:border-accent"
               />
               <button
                 onClick={handleReconcileSubmit}
-                className="px-2 py-0.5 rounded bg-blue-600 text-white text-xs hover:bg-blue-500"
+                className="px-2 py-0.5 rounded bg-accent text-white text-xs hover:bg-blue-500"
               >
                 OK
               </button>
               <button
                 onClick={() => { setShowReconcileInput(false); setReconcileValue(''); }}
-                className="text-slate-500 hover:text-slate-300 text-xs px-1"
+                className="text-dim hover:text-label text-xs px-1"
               >
                 Cancel
               </button>
@@ -802,7 +802,7 @@ function AccountHeader({
           ) : (
             <button
               onClick={() => setShowReconcileInput(true)}
-              className="ml-auto px-2 py-0.5 rounded bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700 border border-slate-700 text-xs"
+              className="ml-auto px-2 py-0.5 rounded bg-elevated text-muted hover:text-body hover:bg-hover border border-edge-strong text-xs"
             >
               Balance
             </button>
@@ -858,38 +858,38 @@ function FilterBar({
   onEndDateChange: (v: string) => void;
 }) {
   return (
-    <div className="flex items-center gap-2 mb-3">
+    <div className="flex items-center gap-3 mb-4">
       <input
         type="text"
         placeholder="Search descriptions..."
         value={searchQuery}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="bg-slate-900 border border-slate-700 rounded-md px-3 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 w-52"
+        className="bg-surface border border-edge-strong rounded-md px-3 py-2 text-sm text-body placeholder-dim focus:outline-none focus:border-accent w-52"
       />
 
       <select
         value={categoryFilter}
         onChange={(e) => onCategoryChange(e.target.value)}
-        className="bg-slate-900 border border-slate-700 rounded-md px-3 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500 appearance-none"
+        className="bg-surface border border-edge-strong rounded-md px-3 py-2 text-sm text-body focus:outline-none focus:border-accent"
       >
         <option value="">All categories</option>
         <option value="__uncategorized__">Uncategorized</option>
         <GroupedCategoryOptions categories={categoryOptions} />
       </select>
 
-      <div className="flex items-center gap-1 text-xs text-slate-500">
+      <div className="flex items-center gap-2 text-sm text-dim">
         <input
           type="date"
           value={startDate}
           onChange={(e) => onStartDateChange(e.target.value)}
-          className="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+          className="bg-surface border border-edge-strong rounded-md px-3 py-2 text-sm text-body focus:outline-none focus:border-accent"
         />
-        <span>to</span>
+        <span className="text-xs">to</span>
         <input
           type="date"
           value={endDate}
           onChange={(e) => onEndDateChange(e.target.value)}
-          className="bg-slate-900 border border-slate-700 rounded-md px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+          className="bg-surface border border-edge-strong rounded-md px-3 py-2 text-sm text-body focus:outline-none focus:border-accent"
         />
       </div>
     </div>
@@ -919,19 +919,19 @@ function SortHeader({
   const ariaSortValue = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined;
   return (
     <th
-      className={`pb-2 px-3 font-medium ${className}`}
+      className={`py-3 px-4 font-semibold ${className}`}
       aria-sort={ariaSortValue}
     >
       <button
         type="button"
         onClick={() => onToggle(field)}
-        className="cursor-pointer select-none hover:text-slate-300 bg-transparent border-none p-0 text-inherit font-inherit text-left uppercase tracking-wide"
+        className={`cursor-pointer select-none hover:text-body bg-transparent border-none p-0 font-inherit text-left uppercase tracking-wider ${active ? 'text-label' : 'text-inherit'}`}
         aria-label={`Sort by ${label}`}
       >
         {label}
         {active && (
-          <span className="ml-0.5 text-slate-400">
-            {dir === 'asc' ? ' \u2191' : ' \u2193'}
+          <span className="ml-1 text-muted">
+            {dir === 'asc' ? '\u2191' : '\u2193'}
           </span>
         )}
       </button>
@@ -984,9 +984,9 @@ function TransactionRow({
   };
 
   return (
-    <tr className="border-b border-slate-800/50 hover:bg-slate-800/30 group">
+    <tr className="border-b border-edge/40 hover:bg-elevated/20 group">
       {/* Date */}
-      <td className="py-1.5 px-3 tabular-nums text-slate-400 whitespace-nowrap">
+      <td className="py-2 px-4 tabular-nums text-label whitespace-nowrap">
         {isEditing && editField === 'date' ? (
           <input
             type="date"
@@ -995,12 +995,12 @@ function TransactionRow({
             onBlur={onSaveEdit}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm w-32 focus:outline-none focus:border-blue-500"
+            className="bg-elevated border border-edge-accent rounded px-1 py-0.5 text-body text-sm w-32 focus:outline-none focus:border-accent"
           />
         ) : (
           <button
             type="button"
-            className="cursor-pointer hover:text-slate-200 bg-transparent border-none p-0 text-left text-inherit font-inherit"
+            className="cursor-pointer hover:text-body bg-transparent border-none p-0 text-left text-inherit font-inherit"
             onClick={() => onStartEdit(txn.id, 'date', txn.date)}
             aria-label={`Edit date: ${formatDate(txn.date)}`}
           >
@@ -1011,20 +1011,20 @@ function TransactionRow({
 
       {/* Account */}
       {showAccount && (
-        <td className="py-1.5 px-3 text-slate-300 truncate max-w-[160px]">
+        <td className="py-2 px-4 text-label truncate max-w-[160px]">
           {acctName}
         </td>
       )}
 
       {/* Category */}
-      <td className="py-1.5 px-3 text-slate-400">
+      <td className="py-2 px-4 text-label">
         {isEditing && editField === 'categoryId' ? (
           <select
             value={editValue}
             onChange={(e) => { onEditChange(e.target.value); }}
             onBlur={onSaveEdit}
             autoFocus
-            className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
+            className="bg-elevated border border-edge-accent rounded px-1 py-0.5 text-body text-sm focus:outline-none focus:border-accent"
           >
             <option value="">Uncategorized</option>
             <GroupedCategoryOptions categories={categoryOptions} />
@@ -1032,7 +1032,7 @@ function TransactionRow({
         ) : (
           <button
             type="button"
-            className="cursor-pointer hover:text-slate-200 bg-transparent border-none p-0 text-left text-inherit font-inherit"
+            className={`cursor-pointer hover:text-body bg-transparent border-none p-0 text-left font-inherit ${txn.categoryId ? 'text-inherit' : 'text-dim'}`}
             onClick={() => onStartEdit(txn.id, 'categoryId', txn.categoryId)}
             aria-label={`Edit category: ${catName}`}
           >
@@ -1042,7 +1042,7 @@ function TransactionRow({
       </td>
 
       {/* Description */}
-      <td className="py-1.5 px-3 text-slate-200 truncate max-w-[300px]">
+      <td className="py-2 px-4 text-body truncate max-w-[300px]">
         {isEditing && editField === 'description' ? (
           <input
             type="text"
@@ -1051,12 +1051,12 @@ function TransactionRow({
             onBlur={onSaveEdit}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm w-full focus:outline-none focus:border-blue-500"
+            className="bg-elevated border border-edge-accent rounded px-1 py-0.5 text-body text-sm w-full focus:outline-none focus:border-accent"
           />
         ) : (
           <button
             type="button"
-            className="cursor-pointer hover:text-blue-300 bg-transparent border-none p-0 text-left text-inherit font-inherit"
+            className="cursor-pointer hover:text-accent-text bg-transparent border-none p-0 text-left text-inherit font-inherit"
             onClick={() => onStartEdit(txn.id, 'description', txn.description)}
             aria-label={`Edit description: ${txn.description || 'empty'}`}
           >
@@ -1066,7 +1066,7 @@ function TransactionRow({
       </td>
 
       {/* Amount */}
-      <td className="py-1.5 px-3 text-right tabular-nums font-medium whitespace-nowrap">
+      <td className="py-2 px-4 text-right tabular-nums font-medium whitespace-nowrap">
         {isEditing && editField === 'amount' ? (
           <input
             type="text"
@@ -1075,11 +1075,11 @@ function TransactionRow({
             onBlur={onSaveEdit}
             onKeyDown={handleKeyDown}
             autoFocus
-            className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm w-24 text-right focus:outline-none focus:border-blue-500"
+            className="bg-elevated border border-edge-accent rounded px-1 py-0.5 text-body text-sm w-24 text-right focus:outline-none focus:border-accent"
           />
         ) : txn.transferPairId ? (
           <span
-            className={`${txn.amount > 0 ? 'text-green-400' : txn.amount < 0 ? 'text-red-400' : 'text-slate-400'}`}
+            className={`${txn.amount > 0 ? 'text-positive' : txn.amount < 0 ? 'text-negative' : 'text-muted'}`}
             title="Transfer amounts cannot be edited directly"
           >
             {formatAmount(txn.amount)}
@@ -1088,7 +1088,7 @@ function TransactionRow({
           <button
             type="button"
             className={`cursor-pointer bg-transparent border-none p-0 text-right text-inherit font-inherit ${
-              txn.amount > 0 ? 'text-green-400' : txn.amount < 0 ? 'text-red-400' : 'text-slate-400'
+              txn.amount > 0 ? 'text-positive' : txn.amount < 0 ? 'text-negative' : 'text-muted'
             }`}
             onClick={() => onStartEdit(txn.id, 'amount', String(txn.amount / 100))}
             aria-label={`Edit amount: ${formatAmount(txn.amount)}`}
@@ -1099,10 +1099,10 @@ function TransactionRow({
       </td>
 
       {/* Delete button */}
-      <td className="py-1.5 px-2 text-center">
+      <td className="py-2 px-2 text-center">
         <button
           onClick={() => onDelete(txn.id)}
-          className="text-slate-600 hover:text-red-400 opacity-70 group-hover:opacity-100 transition-opacity text-xs"
+          className="text-faint hover:text-negative opacity-70 group-hover:opacity-100 transition-opacity text-xs"
           title="Delete transaction"
         >
           &#10005;
@@ -1213,12 +1213,12 @@ function AddTransactionModal({
       aria-label="Add Transaction"
     >
       <div
-        className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-md p-5"
+        className="bg-surface border border-edge-strong rounded-lg shadow-xl w-full max-w-md p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-100">Add Transaction</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-300" aria-label="Close modal">&times;</button>
+          <h3 className="text-sm font-semibold text-heading">Add Transaction</h3>
+          <button onClick={onClose} className="text-dim hover:text-label" aria-label="Close modal">&times;</button>
         </div>
 
         {/* Mode tabs */}
@@ -1229,8 +1229,8 @@ function AddTransactionModal({
               onClick={() => setMode(m)}
               className={`flex-1 text-xs font-medium py-1.5 rounded ${
                 mode === m
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-800 text-slate-400 hover:text-slate-200'
+                  ? 'bg-accent text-white'
+                  : 'bg-elevated text-muted hover:text-body'
               }`}
             >
               {m.charAt(0).toUpperCase() + m.slice(1)}
@@ -1241,13 +1241,13 @@ function AddTransactionModal({
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Account */}
           <div>
-            <label className="block text-xs text-slate-500 mb-1">
+            <label className="block text-xs text-dim mb-1">
               {mode === 'transfer' ? 'From Account' : 'Account'}
             </label>
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
             >
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>{a.name}</option>
@@ -1258,11 +1258,11 @@ function AddTransactionModal({
           {/* To Account (transfer mode) */}
           {mode === 'transfer' && (
             <div>
-              <label className="block text-xs text-slate-500 mb-1">To Account</label>
+              <label className="block text-xs text-dim mb-1">To Account</label>
               <select
                 value={toAccountId}
                 onChange={(e) => setToAccountId(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
               >
                 {accounts.filter((a) => a.id !== accountId).map((a) => (
                   <option key={a.id} value={a.id}>{a.name}</option>
@@ -1274,16 +1274,16 @@ function AddTransactionModal({
           {/* Date + Amount */}
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">Date</label>
+              <label className="block text-xs text-dim mb-1">Date</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">Amount</label>
+              <label className="block text-xs text-dim mb-1">Amount</label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -1291,7 +1291,7 @@ function AddTransactionModal({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 autoFocus
-                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
               />
             </div>
           </div>
@@ -1299,11 +1299,11 @@ function AddTransactionModal({
           {/* Category (not for transfers) */}
           {mode !== 'transfer' && (
             <div>
-              <label className="block text-xs text-slate-500 mb-1">Category</label>
+              <label className="block text-xs text-dim mb-1">Category</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
               >
                 <option value="">{mode === 'income' ? 'Income' : 'Uncategorized'}</option>
                 <GroupedCategoryOptions categories={categories} />
@@ -1313,40 +1313,40 @@ function AddTransactionModal({
 
           {/* Description */}
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Description</label>
+            <label className="block text-xs text-dim mb-1">Description</label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
             />
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Notes</label>
+            <label className="block text-xs text-dim mb-1">Notes</label>
             <input
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
             />
           </div>
 
-          {formError && <p className="text-xs text-red-400">{formError}</p>}
+          {formError && <p className="text-xs text-negative">{formError}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-sm rounded text-slate-400 hover:text-slate-200 bg-slate-800 border border-slate-700"
+              className="px-3 py-1.5 text-sm rounded text-muted hover:text-body bg-elevated border border-edge-strong"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
+              className="px-3 py-1.5 text-sm rounded bg-accent text-white hover:bg-blue-500 disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save'}
             </button>
@@ -1412,32 +1412,32 @@ function AccountFormModal({
       aria-label={isEdit ? 'Edit Account' : 'Add Account'}
     >
       <div
-        className="bg-slate-900 border border-slate-700 rounded-lg shadow-xl w-full max-w-sm p-5"
+        className="bg-surface border border-edge-strong rounded-lg shadow-xl w-full max-w-sm p-5"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-100">{isEdit ? 'Edit Account' : 'Add Account'}</h3>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-300" aria-label="Close modal">&times;</button>
+          <h3 className="text-sm font-semibold text-heading">{isEdit ? 'Edit Account' : 'Add Account'}</h3>
+          <button onClick={onClose} className="text-dim hover:text-label" aria-label="Close modal">&times;</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Name</label>
+            <label className="block text-xs text-dim mb-1">Name</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Type</label>
+            <label className="block text-xs text-dim mb-1">Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value as AccountType)}
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
             >
               {ACCOUNT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -1447,41 +1447,41 @@ function AccountFormModal({
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">Currency</label>
+              <label className="block text-xs text-dim mb-1">Currency</label>
               <input
                 type="text"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value.toUpperCase())}
                 maxLength={5}
-                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body focus:outline-none focus:border-accent"
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs text-slate-500 mb-1">Institution</label>
+              <label className="block text-xs text-dim mb-1">Institution</label>
               <input
                 type="text"
                 value={institution}
                 onChange={(e) => setInstitution(e.target.value)}
                 placeholder="Optional"
-                className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                className="w-full bg-elevated border border-edge-strong rounded px-2 py-1.5 text-sm text-body placeholder-faint focus:outline-none focus:border-accent"
               />
             </div>
           </div>
 
-          {formError && <p className="text-xs text-red-400">{formError}</p>}
+          {formError && <p className="text-xs text-negative">{formError}</p>}
 
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-sm rounded text-slate-400 hover:text-slate-200 bg-slate-800 border border-slate-700"
+              className="px-3 py-1.5 text-sm rounded text-muted hover:text-body bg-elevated border border-edge-strong"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50"
+              className="px-3 py-1.5 text-sm rounded bg-accent text-white hover:bg-blue-500 disabled:opacity-50"
             >
               {saving ? 'Saving...' : isEdit ? 'Update' : 'Create'}
             </button>
