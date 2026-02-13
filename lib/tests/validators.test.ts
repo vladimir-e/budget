@@ -58,7 +58,6 @@ describe('validators', () => {
     it('should pass valid category', () => {
       const result = validateCategory({
         name: 'Groceries',
-        type: 'expense',
         group: 'Immediate Obligations',
       });
       expect(result.valid).toBe(true);
@@ -67,7 +66,7 @@ describe('validators', () => {
     it('should fail with missing fields', () => {
       const result = validateCategory({});
       expect(result.valid).toBe(false);
-      expect(result.errors.length).toBe(3);
+      expect(result.errors.length).toBe(2);
     });
   });
 });

@@ -74,8 +74,8 @@ describe('storage', () => {
     it('should round-trip category records', async () => {
       const filePath = join(tempDir, 'categories.csv');
       const categories: Category[] = [
-        { id: '1', type: 'expense', name: 'Groceries', group: 'Immediate Obligations', assigned: 50000, hidden: false },
-        { id: '2', type: 'expense', name: 'Dining Out', group: 'Lifestyle', assigned: 15000, hidden: true },
+        { id: '1', name: 'Groceries', group: 'Immediate Obligations', assigned: 50000, hidden: false },
+        { id: '2', name: 'Dining Out', group: 'Lifestyle', assigned: 15000, hidden: true },
       ];
 
       await writeCSVFile(filePath, CATEGORY_SCHEMA, categories, { precision: 2 });
@@ -194,12 +194,12 @@ describe('storage', () => {
     it('should append records to an existing file', async () => {
       const filePath = join(tempDir, 'categories.csv');
       const initial: Category[] = [
-        { id: '1', type: 'expense', name: 'Groceries', group: 'Needs', assigned: 50000, hidden: false },
+        { id: '1', name: 'Groceries', group: 'Needs', assigned: 50000, hidden: false },
       ];
       await writeCSVFile(filePath, CATEGORY_SCHEMA, initial, { precision: 2 });
 
       const newRecords: Category[] = [
-        { id: '2', type: 'expense', name: 'Dining', group: 'Wants', assigned: 15000, hidden: false },
+        { id: '2', name: 'Dining', group: 'Wants', assigned: 15000, hidden: false },
       ];
       await appendCSVRecords(filePath, CATEGORY_SCHEMA, newRecords, { precision: 2 });
 
@@ -212,7 +212,7 @@ describe('storage', () => {
     it('should create file with headers when appending to non-existent file', async () => {
       const filePath = join(tempDir, 'new-file.csv');
       const records: Category[] = [
-        { id: '1', type: 'expense', name: 'Test', group: 'G', assigned: 0, hidden: false },
+        { id: '1', name: 'Test', group: 'G', assigned: 0, hidden: false },
       ];
       await appendCSVRecords(filePath, CATEGORY_SCHEMA, records, { precision: 2 });
 
@@ -223,7 +223,7 @@ describe('storage', () => {
     it('should do nothing when appending empty records', async () => {
       const filePath = join(tempDir, 'categories.csv');
       const initial: Category[] = [
-        { id: '1', type: 'expense', name: 'Groceries', group: 'Needs', assigned: 50000, hidden: false },
+        { id: '1', name: 'Groceries', group: 'Needs', assigned: 50000, hidden: false },
       ];
       await writeCSVFile(filePath, CATEGORY_SCHEMA, initial, { precision: 2 });
 

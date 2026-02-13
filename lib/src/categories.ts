@@ -35,10 +35,10 @@ export function getCategoriesByGroup(records: Category[]): Map<string, Category[
   return groups;
 }
 
-/** Calculate spent amount for a category (sum of expense transactions) */
+/** Calculate spent amount for a category (sum of all transactions — refunds offset expenses) */
 export function calculateSpent(categoryId: string, transactions: Transaction[]): number {
   return transactions
-    .filter((t) => t.categoryId === categoryId && t.type === 'expense')
+    .filter((t) => t.categoryId === categoryId)
     .reduce((sum, t) => sum + t.amount, 0);
 }
 
@@ -53,7 +53,6 @@ export function calculateAvailable(assigned: number, spent: number): number {
 
 export interface CreateCategoryInput {
   name: string;
-  type: Category['type'];
   group: string;
   assigned?: number;
 }
@@ -68,7 +67,6 @@ export function createCategory(store: DataStore, data: CreateCategoryInput): Res
   const id = nextId(store.categories);
   const category: Category = {
     id,
-    type: data.type,
     name: data.name.trim(),
     group: data.group.trim(),
     assigned: data.assigned ?? 0,
@@ -80,7 +78,6 @@ export function createCategory(store: DataStore, data: CreateCategoryInput): Res
 
 export interface UpdateCategoryInput {
   name?: string;
-  type?: Category['type'];
   group?: string;
   assigned?: number;
 }
@@ -96,7 +93,6 @@ export function updateCategory(store: DataStore, id: string, changes: UpdateCate
   const merged = {
     ...existing,
     ...(changes.name !== undefined ? { name: changes.name } : {}),
-    ...(changes.type !== undefined ? { type: changes.type } : {}),
     ...(changes.group !== undefined ? { group: changes.group } : {}),
     ...(changes.assigned !== undefined ? { assigned: changes.assigned } : {}),
   };
@@ -109,7 +105,6 @@ export function updateCategory(store: DataStore, id: string, changes: UpdateCate
   const updated: Category = {
     ...existing,
     name: merged.name.trim(),
-    type: merged.type,
     group: merged.group.trim(),
     assigned: merged.assigned,
   };

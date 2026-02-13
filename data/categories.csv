@@ -1,22 +1,19 @@
-id,type,name,group,assigned,hidden
-1,income,Paycheck,Income,0,false
-2,income,Interest,Income,0,false
-3,income,Other Income,Income,0,false
-4,expense,Rent/Mortgage,Immediate Obligations,0,false
-5,expense,Utilities,Immediate Obligations,0,false
-6,expense,Groceries,Immediate Obligations,0,false
-7,expense,Insurance,Immediate Obligations,0,false
-8,expense,Transportation,Immediate Obligations,0,false
-9,expense,Internet/Phone,Immediate Obligations,0,false
-10,expense,Dining Out,Lifestyle,0,false
-11,expense,Entertainment,Lifestyle,0,false
-12,expense,Shopping,Lifestyle,0,false
-13,expense,Personal Care,Lifestyle,0,false
-14,expense,Health/Medical,True Expenses,0,false
-15,expense,Car Maintenance,True Expenses,0,false
-16,expense,Home Maintenance,True Expenses,0,false
-17,expense,Clothing,True Expenses,0,false
-18,expense,Gifts,True Expenses,0,false
-19,expense,Education,Quality of Life Goals,0,false
-20,expense,Vacation,Quality of Life Goals,0,false
-21,expense,Savings,Quality of Life Goals,0,false
+id,name,group,assigned,hidden
+1,Income,Income,0.00,false
+2,Housing,Fixed,0.00,false
+3,Bills & Utilities,Fixed,0.00,false
+4,Subscriptions,Fixed,0.00,false
+5,Groceries,Daily Living,0.00,false
+6,Dining Out,Daily Living,0.00,false
+7,Alcohol & Smoking,Personal,0.00,false
+8,Transportation,Daily Living,0.00,false
+9,Health & Beauty,Personal,0.00,false
+10,Clothing,Personal,0.00,false
+11,Fun & Hobbies,Personal,0.00,false
+12,Allowances,Personal,0.00,false
+13,Education & Business,Personal,0.00,false
+14,Housekeeping & Maintenance,Irregular,0.00,false
+15,Gifts & Giving,Personal,0.00,false
+16,Big Purchases,Irregular,0.00,false
+17,Travel,Irregular,0.00,false
+18,Taxes & Fees,Irregular,0.00,false

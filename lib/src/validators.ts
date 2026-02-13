@@ -1,4 +1,4 @@
-import { ACCOUNT_TYPES, TRANSACTION_TYPES, CATEGORY_TYPES } from './types.js';
+import { ACCOUNT_TYPES, TRANSACTION_TYPES } from './types.js';
 import type { Account, Transaction, Category } from './types.js';
 
 export interface ValidationError {
@@ -59,9 +59,6 @@ export function validateCategory(data: Partial<Category>): ValidationResult {
 
   if (!data.name?.trim()) {
     errors.push({ field: 'name', message: 'Name is required' });
-  }
-  if (!data.type || !CATEGORY_TYPES.includes(data.type)) {
-    errors.push({ field: 'type', message: `Type must be one of: ${CATEGORY_TYPES.join(', ')}` });
   }
   if (!data.group?.trim()) {
     errors.push({ field: 'group', message: 'Group is required' });

@@ -313,10 +313,10 @@ export function TransactionsScreen() {
     [filteredTransactions, page],
   );
 
-  // --- Category options for filter dropdown ---
+  // --- Category options for dropdowns (sorted by group then name) ---
   const categoryOptions = useMemo(() => {
     const visible = categories.filter((c) => !c.hidden);
-    visible.sort((a, b) => a.name.localeCompare(b.name));
+    visible.sort((a, b) => a.group.localeCompare(b.group) || a.name.localeCompare(b.name));
     return visible;
   }, [categories]);
 
@@ -595,7 +595,7 @@ function AccountSidebar({
                   {/* Context menu trigger */}
                   <button
                     onClick={(e) => { e.stopPropagation(); setMenuAccountId(menuAccountId === a.id ? null : a.id); }}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300 opacity-0 group-hover/acct:opacity-100 transition-opacity text-xs px-1"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 opacity-70 group-hover/acct:opacity-100 transition-opacity text-xs px-1"
                     title="Account settings"
                   >
                     &#9881;
@@ -770,6 +770,25 @@ function AccountHeader({
 }
 
 // ---------------------------------------------------------------------------
+// Grouped Category Options (renders <optgroup> sections)
+// ---------------------------------------------------------------------------
+
+function GroupedCategoryOptions({ categories }: { categories: Category[] }) {
+  const grouped = new Map<string, Category[]>();
+  for (const cat of categories) {
+    const key = cat.group || 'Other';
+    let list = grouped.get(key);
+    if (!list) { list = []; grouped.set(key, list); }
+    list.push(cat);
+  }
+  return <>{Array.from(grouped.entries()).map(([group, cats]) => (
+    <optgroup key={group} label={group}>
+      {cats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+    </optgroup>
+  ))}</>;
+}
+
+// ---------------------------------------------------------------------------
 // Filter Bar
 // ---------------------------------------------------------------------------
 
@@ -811,9 +830,7 @@ function FilterBar({
       >
         <option value="">All categories</option>
         <option value="__uncategorized__">Uncategorized</option>
-        {categoryOptions.map((c) => (
-          <option key={c.id} value={c.id}>{c.name}</option>
-        ))}
+        <GroupedCategoryOptions categories={categoryOptions} />
       </select>
 
       <div className="flex items-center gap-1 text-xs text-slate-500">
@@ -966,9 +983,7 @@ function TransactionRow({
             className="bg-slate-800 border border-slate-600 rounded px-1 py-0.5 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
           >
             <option value="">Uncategorized</option>
-            {categoryOptions.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
+            <GroupedCategoryOptions categories={categoryOptions} />
           </select>
         ) : (
           <button
@@ -1043,7 +1058,7 @@ function TransactionRow({
       <td className="py-1.5 px-2 text-center">
         <button
           onClick={() => onDelete(txn.id)}
-          className="text-slate-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+          className="text-slate-600 hover:text-red-400 opacity-70 group-hover:opacity-100 transition-opacity text-xs"
           title="Delete transaction"
         >
           &#10005;
@@ -1088,6 +1103,11 @@ function AddTransactionModal({
       if (other) setToAccountId(other.id);
     }
   }, [mode, accountId, accounts, toAccountId]);
+
+  // Reset category when switching to income (income defaults to uncategorized)
+  useEffect(() => {
+    if (mode === 'income') setCategoryId('');
+  }, [mode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1226,20 +1246,10 @@ function AddTransactionModal({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
+                autoFocus
                 className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
               />
             </div>
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Description</label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
-            />
           </div>
 
           {/* Category (not for transfers) */}
@@ -1251,13 +1261,22 @@ function AddTransactionModal({
                 onChange={(e) => setCategoryId(e.target.value)}
                 className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
               >
-                <option value="">Uncategorized</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                <option value="">{mode === 'income' ? 'Income' : 'Uncategorized'}</option>
+                <GroupedCategoryOptions categories={categories} />
               </select>
             </div>
           )}
+
+          {/* Description */}
+          <div>
+            <label className="block text-xs text-slate-500 mb-1">Description</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
+            />
+          </div>
 
           {/* Notes */}
           <div>

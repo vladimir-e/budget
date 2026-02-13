@@ -28,10 +28,10 @@ async function setupTestApp() {
   );
   await writeFile(
     join(dataDir, 'categories.csv'),
-    'id,type,name,group,assigned,hidden\n' +
-    '1,expense,Groceries,Immediate Obligations,0,false\n' +
-    '2,expense,Dining Out,Lifestyle,0,false\n' +
-    '3,income,Paycheck,Income,0,false\n',
+    'id,name,group,assigned,hidden\n' +
+    '1,Groceries,Immediate Obligations,0,false\n' +
+    '2,Dining Out,Lifestyle,0,false\n' +
+    '3,Paycheck,Income,0,false\n',
   );
 
   await initStore(dataDir);
@@ -327,7 +327,7 @@ describe('Categories API', () => {
   it('POST /api/categories creates a category', async () => {
     const res = await request(app)
       .post('/api/categories')
-      .send({ name: 'Rent', type: 'expense', group: 'Housing' });
+      .send({ name: 'Rent', group: 'Housing' });
     expect(res.status).toBe(201);
     expect(res.body.name).toBe('Rent');
     expect(res.body.group).toBe('Housing');
@@ -336,7 +336,7 @@ describe('Categories API', () => {
   it('POST /api/categories validates input', async () => {
     const res = await request(app)
       .post('/api/categories')
-      .send({ name: '', type: 'invalid', group: '' });
+      .send({ name: '', group: '' });
     expect(res.status).toBe(400);
   });
 

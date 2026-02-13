@@ -4,9 +4,6 @@ export type AccountType = 'cash' | 'checking' | 'credit_card' | 'loan' | 'saving
 /** Transaction types */
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
-/** Category types */
-export type CategoryType = 'income' | 'expense';
-
 /** Account as returned by the API (includes computed workingBalance) */
 export interface Account {
   id: string;
@@ -45,7 +42,6 @@ export interface Transaction {
 /** Category record */
 export interface Category {
   id: string;
-  type: CategoryType;
   name: string;
   group: string;
   assigned: number;
@@ -127,14 +123,12 @@ export interface UpdateTransactionInput {
 }
 
 export interface CreateCategoryInput {
-  type: CategoryType;
   name: string;
   group: string;
   assigned?: number;
 }
 
 export interface UpdateCategoryInput {
-  type?: CategoryType;
   name?: string;
   group?: string;
   assigned?: number;

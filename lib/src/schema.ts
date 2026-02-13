@@ -106,7 +106,6 @@ void _transactionComplete;
 
 export const CATEGORY_SCHEMA = [
   { name: 'id', type: 'string' },
-  { name: 'type', type: 'string' },
   { name: 'name', type: 'string' },
   { name: 'group', type: 'string' },
   { name: 'assigned', type: 'money' },

@@ -49,7 +49,6 @@ const makeTx = (overrides: Partial<Transaction> = {}): Transaction => ({
 
 const makeCat = (overrides: Partial<Category> = {}): Category => ({
   id: 'c1',
-  type: 'expense',
   name: 'Groceries',
   group: 'Immediate Obligations',
   assigned: 500,
@@ -79,7 +78,6 @@ describe('integration — end-to-end workflow', () => {
     // 2. Create category
     result = createCategory(store, {
       name: 'Groceries',
-      type: 'expense',
       group: 'Immediate Obligations',
     });
     expect(result.ok).toBe(true);

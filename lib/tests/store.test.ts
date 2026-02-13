@@ -31,8 +31,8 @@ describe('store', () => {
         '1,expense,1,2025-01-15,6,Groceries,Whole Foods,,-52.30,,manual,2025-01-15\n',
       );
       await writeFile(join(tempDir, 'categories.csv'),
-        'id,type,name,group,assigned,hidden\n' +
-        '6,expense,Groceries,Immediate Obligations,500.00,false\n',
+        'id,name,group,assigned,hidden\n' +
+        '6,Groceries,Immediate Obligations,500.00,false\n',
       );
 
       const store = await loadStore(tempDir);
@@ -78,7 +78,7 @@ describe('store', () => {
         'id,type,accountId,date,categoryId,description,payee,transferPairId,amount,notes,source,createdAt\n',
       );
       await writeFile(join(tempDir, 'categories.csv'),
-        'id,type,name,group,assigned,hidden\n',
+        'id,name,group,assigned,hidden\n',
       );
 
       const store = await loadStore(tempDir);
@@ -96,7 +96,7 @@ describe('store', () => {
         '1,expense,999,2025-01-15,888,Orphaned,,,-10.00,,manual,\n',
       );
       await writeFile(join(tempDir, 'categories.csv'),
-        'id,type,name,group,assigned,hidden\n',
+        'id,name,group,assigned,hidden\n',
       );
 
       const store = await loadStore(tempDir);
@@ -128,7 +128,7 @@ describe('store', () => {
           },
         ],
         categories: [
-          { id: '1', type: 'expense', name: 'Groceries', group: 'Needs', assigned: 50000, hidden: false },
+          { id: '1', name: 'Groceries', group: 'Needs', assigned: 50000, hidden: false },
         ],
       };
 

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext.tsx';
-import type { BudgetCategory, CategoryType, CreateCategoryInput, UpdateCategoryInput } from '../api/types.ts';
+import type { BudgetCategory, CreateCategoryInput, UpdateCategoryInput } from '../api/types.ts';
 import {
   updateCategory as apiUpdateCategory,
   createCategory as apiCreateCategory,
@@ -510,7 +510,7 @@ function CategoryRow({
       <td className="py-1.5 px-1 text-center relative">
         <button
           onClick={(e) => { e.stopPropagation(); onMenuToggle(menuCategoryId === cat.id ? null : cat.id); }}
-          className="text-slate-700 hover:text-slate-300 opacity-0 group-hover/cat:opacity-100 transition-opacity text-xs px-1"
+          className="text-slate-500 hover:text-slate-300 opacity-70 group-hover/cat:opacity-100 transition-opacity text-xs px-1"
           title="Category options"
         >
           &#8943;
@@ -559,7 +559,6 @@ function CategoryFormModal({
 }) {
   const isEdit = !!category;
   const [name, setName] = useState(category?.name ?? '');
-  const [type, setType] = useState<CategoryType>(category?.type ?? 'expense');
   const [group, setGroup] = useState(category?.group ?? '');
   const [customGroup, setCustomGroup] = useState('');
   const [useCustomGroup, setUseCustomGroup] = useState(false);
@@ -587,14 +586,12 @@ function CategoryFormModal({
       if (isEdit) {
         await onSave({
           name: name.trim(),
-          type,
           group: finalGroup,
           assigned: parsedAssigned,
         } as UpdateCategoryInput);
       } else {
         await onSave({
           name: name.trim(),
-          type,
           group: finalGroup,
           assigned: parsedAssigned,
         } as CreateCategoryInput);
@@ -634,27 +631,6 @@ function CategoryFormModal({
               autoFocus
               className="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
             />
-          </div>
-
-          {/* Type */}
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Type</label>
-            <div className="flex gap-1">
-              {(['expense', 'income'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setType(t)}
-                  className={`flex-1 text-xs font-medium py-1.5 rounded ${
-                    type === t
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
-                >
-                  {t.charAt(0).toUpperCase() + t.slice(1)}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Group */}

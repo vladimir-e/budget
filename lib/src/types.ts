@@ -4,9 +4,6 @@ export type AccountType = 'cash' | 'checking' | 'credit_card' | 'loan' | 'saving
 /** Transaction types */
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
-/** Category types */
-export type CategoryType = 'income' | 'expense';
-
 /** Account record */
 export interface Account {
   id: string;
@@ -39,7 +36,6 @@ export interface Transaction {
 /** Category record */
 export interface Category {
   id: string;
-  type: CategoryType;
   name: string;
   group: string;
   assigned: number;
@@ -56,7 +52,3 @@ export const TRANSACTION_TYPES: readonly TransactionType[] = [
   'income', 'expense', 'transfer',
 ] as const;
 
-/** Valid category types */
-export const CATEGORY_TYPES: readonly CategoryType[] = [
-  'income', 'expense',
-] as const;

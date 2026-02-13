@@ -41,7 +41,7 @@ describe('schema', () => {
 
     it('should extract ordered field names from CATEGORY_SCHEMA', () => {
       const names = fieldNames(CATEGORY_SCHEMA);
-      expect(names).toEqual(['id', 'type', 'name', 'group', 'assigned', 'hidden']);
+      expect(names).toEqual(['id', 'name', 'group', 'assigned', 'hidden']);
     });
   });
 
@@ -310,7 +310,6 @@ describe('schema', () => {
     it('should handle "false" correctly for booleans', () => {
       const raw: Record<string, string> = {
         id: '1',
-        type: 'expense',
         name: 'Test',
         group: 'Test',
         assigned: '0',
@@ -323,7 +322,6 @@ describe('schema', () => {
     it('should handle "true" for booleans', () => {
       const raw: Record<string, string> = {
         id: '1',
-        type: 'expense',
         name: 'Test',
         group: 'Test',
         assigned: '0',
@@ -336,7 +334,6 @@ describe('schema', () => {
     it('should handle empty string for money fields', () => {
       const raw: Record<string, string> = {
         id: '1',
-        type: 'expense',
         name: 'Test',
         group: 'Test',
         assigned: '',
@@ -439,7 +436,6 @@ describe('schema', () => {
     it('should round-trip a category record', () => {
       const original: Category = {
         id: '5',
-        type: 'expense',
         name: 'Groceries',
         group: 'Immediate Obligations',
         assigned: 50000, // $500.00

@@ -25,7 +25,7 @@ If there are no accounts in `data/accounts.csv` (empty or headers-only), the use
    - Type: `checking`, `savings`, `credit_card`, etc.
    - Currency: `USD` (ask if not obvious)
    - Balance: If they have bank statements, use the most recent closing balance. Otherwise ask.
-3. **Review the starter categories.** The system comes with 21 default categories. Ask if they want to add, rename, or reorganize any.
+3. **Review the starter categories.** The system comes with 17 default categories. Ask if they want to add, rename, or reorganize any.
 4. **Explain the concept.** "You set a budget amount for each category, then import your bank transactions. The system tracks how much you've spent vs. what you budgeted. Every transaction gets categorized so you can see exactly where your money goes."
 
 ### Importing transactions
@@ -81,7 +81,7 @@ Note: `balance` is in integer cents (245050 = $2,450.50).
 ```bash
 curl -X POST http://localhost:3001/api/categories \
   -H 'Content-Type: application/json' \
-  -d '{"name": "Subscriptions", "type": "expense", "group": "Lifestyle"}'
+  -d '{"name": "Subscriptions", "group": "Lifestyle"}'
 ```
 
 ### Importing transactions

@@ -19,7 +19,6 @@ import type { DataStore } from '../src/store.js';
 
 const makeCat = (overrides: Partial<Category> = {}): Category => ({
   id: '1',
-  type: 'expense',
   name: 'Groceries',
   group: 'Immediate Obligations',
   assigned: 500,
@@ -70,13 +69,14 @@ describe('categories — queries', () => {
     expect(groups.get('Lifestyle')).toHaveLength(1);
   });
 
-  it('should calculate spent', () => {
+  it('should calculate spent (income offsets expenses for refunds)', () => {
     const transactions: Transaction[] = [
       makeTx({ id: '1', categoryId: '1', amount: -100 }),
       makeTx({ id: '2', categoryId: '1', amount: -50 }),
       makeTx({ id: '3', type: 'income', categoryId: '1', amount: 200 }),
     ];
-    expect(calculateSpent('1', transactions)).toBe(-150);
+    // All transactions in category count: -100 + -50 + 200 = 50
+    expect(calculateSpent('1', transactions)).toBe(50);
   });
 
   it('should calculate available', () => {
@@ -93,7 +93,6 @@ describe('createCategory', () => {
   it('should create a category', () => {
     const result = createCategory(emptyStore, {
       name: 'Groceries',
-      type: 'expense',
       group: 'Immediate Obligations',
     });
     expect(result.ok).toBe(true);
@@ -108,7 +107,6 @@ describe('createCategory', () => {
     const store: DataStore = { ...emptyStore, categories: [makeCat({ id: '3' })] };
     const result = createCategory(store, {
       name: 'New',
-      type: 'expense',
       group: 'Lifestyle',
     });
     expect(result.ok).toBe(true);
@@ -119,7 +117,6 @@ describe('createCategory', () => {
   it('should accept optional assigned amount', () => {
     const result = createCategory(emptyStore, {
       name: 'Groceries',
-      type: 'expense',
       group: 'Immediate Obligations',
       assigned: 500,
     });
@@ -131,18 +128,7 @@ describe('createCategory', () => {
   it('should reject empty name', () => {
     const result = createCategory(emptyStore, {
       name: '',
-      type: 'expense',
       group: 'Immediate Obligations',
-    });
-    expect(result.ok).toBe(false);
-  });
-
-  it('should reject invalid type', () => {
-    const result = createCategory(emptyStore, {
-      name: 'Test',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      type: 'invalid' as any,
-      group: 'Test',
     });
     expect(result.ok).toBe(false);
   });

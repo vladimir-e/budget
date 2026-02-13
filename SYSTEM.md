@@ -47,15 +47,17 @@ Any mutation to an account's transactions auto-clears its reconciled state, forc
 ### Budget calculation
 
 ```
-spent     = sum of expense transactions in the category (for the selected month)
+spent     = sum of all transactions in the category (for the selected month)
 available = assigned + spent
 ```
 
-Since expenses are negative, `available = assigned - |expenses|`. If you assigned $200 to Groceries and spent $150, available is $50.
+Since expenses are negative, `available = assigned - |expenses|`. If you assigned $200 to Groceries and spent $150, available is $50. Refunds (positive amounts in an expense category) offset spending.
 
 The budget view filters by month. Each month is independent — you see what you assigned and what you spent that month.
 
 **"Ready to assign"** is total income minus total assigned across all categories. It tells you how much unbudgeted money you have.
+
+**Income and refunds.** Income transactions don't need a category — uncategorized income contributes to "Ready to Assign". To record a refund, create an income-type transaction and assign it to the expense category (e.g., Groceries). The refund reduces that category's spent amount.
 
 ### Amount representation
 
@@ -68,7 +70,7 @@ All money is stored as integers internally (1050 = $10.50) to avoid floating-poi
 
 ## Typical Workflow
 
-1. **Setup.** Create accounts matching your bank accounts. The system comes with 21 starter categories.
+1. **Setup.** Create accounts matching your bank accounts. The system comes with 17 starter categories.
 2. **Import.** Export CSV from your bank, drop it in `drop_files_here/`, and let the AI assistant import and categorize.
 3. **Budget.** Go to the Budget screen, assign dollar amounts to categories for the month.
 4. **Review.** Check the Transactions screen to see spending, search, filter, and re-categorize as needed.

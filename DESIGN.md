@@ -16,7 +16,7 @@ The `lib/` package contains the pure core. The `server/` package provides the im
 ```
 lib/            Pure business logic (no I/O in exports, Node fs only in storage.ts/store.ts)
   src/
-    types.ts          Account, Transaction, Category interfaces + enums
+    types.ts          Account, Transaction, Category interfaces + constants
     result.ts         Result<T> = Ok | Err, no exceptions
     schema.ts         Field metadata, serialize/deserialize, money conversion
     csv.ts            RFC 4180 parser/writer, BOM-safe
